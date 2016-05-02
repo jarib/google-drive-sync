@@ -44,8 +44,6 @@ const argv = yargs
     .help('help')
     .argv;
 
-log(argv);
-
 const credentials = JSON.parse(fs.readFileSync(argv.credentials, 'utf-8'))
 
 const syncer = new Syncer({

@@ -37,8 +37,8 @@ export default class Syncer {
 
         return Promise.join(
             fetchState,
-            this.client.authorize(),
-            (state, client) => {
+            this.client.authorize(), // TODO: re-use JWT tokens but handle expiry
+            (state) => {
                 return this.ensurePageTokenIn(state || {pageToken: null, docs: {}})
                     .then(state => this.fetchChanges(state))
         });
@@ -90,6 +90,7 @@ export default class Syncer {
             pageToken: list.nextPageToken || list.newStartPageToken,
             lastCheck: moment().format()
         }))
+        .then(state => this.events.emit('synced', state))
         .then(() => ids);
     }
 

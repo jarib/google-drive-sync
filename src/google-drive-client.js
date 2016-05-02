@@ -15,7 +15,13 @@ export default class GoogleDriveClient {
         );
     }
 
+    isAuthorized() {
+        return !!this.drive;
+    }
+
     authorize() {
+        log('authorizing')
+
         return new Promise((resolve, reject) => {
             this.jwt.authorize((err, tokens) => {
                 if (err) {

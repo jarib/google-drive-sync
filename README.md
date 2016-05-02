@@ -29,12 +29,12 @@ module.exports = function (googleDriveSync) {
   googleDriveSync.on('saved', fileName => console.log('document was saved', fileName));
 }
 
-$ google-drive-sync --plugins ./my-plugin.js [...]
+$ google-drive-sync --plugins `pwd`/my-plugin.js [...]
 ```
 
 ## Debug logging
 
 ```
 
-$ DEBUG=google-drive-sync:* google-drive-sync --plugins ./my-plugin.js [...]
+$ DEBUG=google-drive-sync:* google-drive-sync [...]
 ```

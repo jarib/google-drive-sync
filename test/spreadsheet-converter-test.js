@@ -10,13 +10,19 @@ describe('SpreadsheetConverter', () => {
             return SpreadsheetConverter.convert(xlsx)
                 .then(result => {
                     assert.deepEqual(Object.keys(result), ['Sheet1']);
-                    assert.equal(result.Sheet1.length, 1);
+                    assert.equal(result.Sheet1.length, 3);
 
-                    const row = result.Sheet1[0];
+                    const row1 = result.Sheet1[0];
+                    const row2 = result.Sheet1[1];
 
-                    assert.equal(row.col1, '1');
-                    assert.equal(row.col2, '2');
-                    assert.equal(row.col3, '3');
+                    assert.equal(row1.col1, '1');
+                    assert.equal(row1.col2, '2');
+                    assert.equal(row1.col3, '3');
+
+                    assert.equal(row2.col1, null);
+                    assert.equal(row2.col2, null);
+                    assert.equal(row2.col3, null);
+                    assert.equal(row2.col4, '5');
                 })
         });
     });

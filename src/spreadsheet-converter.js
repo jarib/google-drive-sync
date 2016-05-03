@@ -6,18 +6,62 @@ export default class SpreadsheetConverter {
         const workbook = XLSX.read(xlsxBinaryString, {type: 'binary'});
 
         workbook.SheetNames.forEach(sn => {
-            const sheet = workbook.Sheets[sn];
-            const rows = XLSX.utils.sheet_to_json(sheet);
-
-            // clean up
-            rows.forEach(r => {
-                delete r.undefined;
-            });
-
-            const cols = Object.keys(rows[0]);
-            result[sn] = rows.filter(r => Object.keys(r).length == cols.length);
+            result[sn] = this._parseSheet(workbook.Sheets[sn]);
         });
 
         return Promise.resolve(result);
+    }
+
+    static _parseSheet(sheet) {
+        if (sheet["!ref"] == null) {
+            return [];
+        } else {
+            const range = XLSX.utils.decode_range(sheet["!ref"]);
+            const cols = [];
+            const rows = [];
+
+            for (let rowIndex = range.s.r; rowIndex <= range.e.r; ++rowIndex) {
+                const rowName = XLSX.utils.encode_row(rowIndex);
+
+                for (let colIndex = range.s.c; colIndex <= range.e.c; ++colIndex) {
+                    const colName = XLSX.utils.encode_col(colIndex);
+
+                    const val = sheet[colName + rowName];
+
+                    let formattedValue = val ? XLSX.utils.format_cell(val) : null;
+
+                    if (formattedValue && !formattedValue.trim().length) {
+                        formattedValue = null;
+                    }
+
+                    if (rowIndex === 0) {
+                        cols.push(formattedValue);
+                    } else {
+                        const row = rows[rowIndex - 1] = rows[rowIndex - 1] || []
+                        row.push(formattedValue);
+                    }
+                }
+            }
+
+            const rowObjects = [];
+
+            rows.forEach(row => {
+                if (row.every(d => !d)) {
+                    return;
+                }
+
+                const obj = {};
+
+                cols.forEach((col, i) => {
+                    if (col) {
+                        obj[col] = row[i];
+                    }
+                });
+
+                rowObjects.push(obj);
+            });
+
+            return rowObjects;
+        }
     }
 }

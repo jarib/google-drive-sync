@@ -73,8 +73,7 @@ export default class Syncer {
         list.changes
             .filter(i => {
                 return !i.removed && mimeTypes.indexOf(i.file.mimeType) !== -1
-            }
-            )
+            })
             .forEach(i => {
                 state.docs[i.fileId] = i.file;
                 ids.add(i.fileId);
@@ -210,7 +209,7 @@ export default class Syncer {
 
             return fs
                 .writeFile(filePath, JSON.stringify(data))
-                .then(() => this.events.emit('saved', fileName));
+                .then(() => this.events.emit('saved', fileName, data));
         });
     }
 

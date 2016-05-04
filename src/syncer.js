@@ -33,6 +33,7 @@ export default class Syncer {
     }
 
     sync() {
+        this.events.emit('sync');
         const fetchState = fs.readFile(this.stateFile, 'utf-8').catch(err => null).then(JSON.parse)
 
         return Promise.join(

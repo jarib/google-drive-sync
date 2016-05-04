@@ -187,13 +187,22 @@ export default class Syncer {
     }
 
     getModification(doc) {
+        const now = moment();
+        const modified = moment(doc.modifiedTime);
+        const lag = moment.duration(now.diff(modified));
+
         return {
             user: {
                 name: doc.lastModifyingUser.displayName,
                 email: doc.lastModifyingUser.emailAddress
             },
-            date: doc.modifiedTime,
-            version: doc.version
+            date: modified.format(),
+            version: doc.version,
+            downloadTime: now.format(),
+            downloadLag: {
+                ms: lag.valueOf(),
+                human: lag.humanize()
+            }
         };
     }
 

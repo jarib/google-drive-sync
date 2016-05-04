@@ -10,6 +10,7 @@ import url from 'url';
 import daemon from 'daemon';
 import debug from 'debug';
 import moment from 'moment';
+import path from 'path';
 
 const log = debug('google-drive-sync:cli');
 const httpLog = debug('google-drive-sync:http');
@@ -73,8 +74,10 @@ if (argv.daemonize) {
 }
 
 if (argv.plugins) {
+  const cwd = process.cwd();
+
   argv.plugins.forEach(pluginPath => {
-    const p = require(pluginPath);
+    const p = require(path.resolve(cwd, pluginPath));
     p(syncer);
   })
 }

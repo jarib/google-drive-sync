@@ -8,6 +8,7 @@ import moment from 'moment';
 import EventEmitter from 'events';
 import zip from 'lodash.zip';
 import streamBuffers from 'stream-buffers';
+import State from './state';
 
 const log = debug('google-drive-sync:syncer');
 
@@ -16,7 +17,6 @@ const mimeTypes = [
     'application/vnd.google-apps.document'
 ];
 
-const maxItemsInState = 100;
 const IGNORED_ERRORS = [429];
 
 export default class Syncer {
@@ -28,39 +28,35 @@ export default class Syncer {
             throw new Error(`must specify "state" option`)
         }
 
-        this.stateFile = opts.state;
+        this.state = new State(opts.state);
         this.events = new EventEmitter();
     }
 
     sync() {
         this.events.emit('sync');
-        const fetchState = fs.readFile(this.stateFile, 'utf-8').catch(err => null).then(JSON.parse)
 
         return Promise.join(
-            fetchState,
+            this.state.read(),
             this.client.authorize(), // TODO: re-use JWT tokens but handle expiry
-            (state) => {
-                return this.ensurePageTokenIn(state || {pageToken: null, docs: {}})
-                    .then(state => this.fetchChanges(state))
+            () => {
+                return this.ensurePageTokenInState().then(::this.fetchChanges)
         });
     }
 
-    fetchChanges(state) {
-        return this.client
-            .getChanges(state.pageToken)
-            .then(list => this.handleChanges(state, list))
+    fetchChanges() {
+        return this.client.getChanges(this.state.getPageToken())
+            .then(::this.handleChanges)
             .then(::this.fetchSpecialFiles)
             .catch(err => this.events.emit('error', err));
 
     }
 
-    ensurePageTokenIn(state) {
-        if (state.pageToken) {
-            return Promise.resolve(state);
+    ensurePageTokenInState() {
+        if (this.state.getPageToken()) {
+            return Promise.resolve();
         } else {
-            return this.client
-                .getStartPageToken()
-                .then(res => this.updateState({...state, pageToken: res.startPageToken}))
+            return this.client.getStartPageToken()
+                .then(res => this.state.save({pageToken: res.startPageToken}));
         }
     }
 
@@ -68,30 +64,19 @@ export default class Syncer {
         this.events.on(...args);
     }
 
-    handleChanges(state, list) {
-        const ids = new Set();
-
-        list.changes
-            .filter(i => {
-                return !i.removed && mimeTypes.indexOf(i.file.mimeType) !== -1
-            })
-            .forEach(i => {
-                state.docs[i.fileId] = i.file;
-                ids.add(i.fileId);
-            });
+    handleChanges(list) {
+        const changes = list.changes.filter(i => !i.removed && mimeTypes.indexOf(i.file.mimeType) !== -1)
 
         return Promise.map(
-            Array.from(ids),
-            id => this.client.getFile(id).then(::this.downloadFile),
+            changes,
+            ::this.processChange,
             {concurrency: 3}
         )
-        .then(() => this.updateState({
-            ...state,
+        .then(() => this.state.save({
             pageToken: list.nextPageToken || list.newStartPageToken,
             lastCheck: moment().format()
         }))
-        .then(state => this.events.emit('synced', state))
-        .then(() => ids);
+        .then(state => this.events.emit('synced', state.data));
     }
 
     fetchSpecialFiles() {
@@ -104,17 +89,13 @@ export default class Syncer {
         )
     }
 
-    updateState(state) {
-        const ids = Object.keys(state.docs);
-
-        if (ids.length > maxItemsInState) {
-            ids
-                .sort((a, b) => moment(state.docs[b].modifiedDate).valueOf() - moment(state.docs[a].modifiedDate).valueOf())
-                .slice(maxItemsInState)
-                .forEach(id => delete state.docs[id])
-        }
-
-        return fs.writeFile(this.stateFile, JSON.stringify(state)).then(() => state);
+    processChange(change) {
+        return this.client
+            .getFile(change.fileId)
+            .then(file =>
+                this.downloadFile(file)
+                    .then(() => this.state.setFile(change.fileId, { change, file }))
+            );
     }
 
     downloadFile(file) {
@@ -191,7 +172,7 @@ export default class Syncer {
         const modified = moment(doc.modifiedTime);
         const lag = moment.duration(now.diff(modified));
 
-        return {
+        const result = {
             user: {
                 name: doc.lastModifyingUser.displayName,
                 email: doc.lastModifyingUser.emailAddress
@@ -204,6 +185,21 @@ export default class Syncer {
                 human: lag.humanize()
             }
         };
+
+        const previous = this.state.getFile(doc.id);
+
+        if (previous && previous.file && previous.file.version) {
+            result.lastUpdate = {
+                version: previous.file.version,
+                changeTime: previous.change ? moment(previous.change.time).format() : null,
+            };
+
+            if (+previous.file.version && +doc.version) {
+                result.versionDiff = +(doc.version) - +(previous.file.version);
+            }
+        }
+
+        return result;
     }
 
     save(name, data) {
@@ -221,9 +217,5 @@ export default class Syncer {
                 .writeFile(filePath, JSON.stringify(data))
                 .then(() => this.events.emit('saved', fileName, data));
         });
-    }
-
-    log(obj) {
-        log(JSON.stringify(obj, null, 2));
     }
 }

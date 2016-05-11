@@ -15,9 +15,14 @@ export default class ArchieConverter {
     static convert(html, options = {}) {
         return this.parseHtml(html, options).then(aml => {
             try {
-                return archieml.load(aml);
+                return {
+                    result: archieml.load(aml),
+                    aml: aml
+                };
             } catch (err) {
                 err.isArchieMLError = true;
+                err.aml = aml;
+
                 throw err;
             }
         });

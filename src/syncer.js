@@ -103,13 +103,14 @@ export default class Syncer {
 
         switch (file.mimeType) {
             case 'application/vnd.google-apps.spreadsheet':
-                promise = this.convertSpreadsheet(file).then(data => ([{fileName: file.id, data}]));
+                promise = this.convertSpreadsheet(file).then(data => ([{fileName: `${file.id}.json`, data}]));
                 break;
             case 'application/vnd.google-apps.document':
                 promise = this.convertDocument(file).then(results => ([
-                    {fileName: file.id, data: results.plain},
-                    {fileName: `${file.id}.styled`, data: results.styled},
-                ]))
+                    {fileName: `${file.id}.json`, data: results.plain},
+                    {fileName: `${file.id}.styled.json`, data: results.styled},
+                    {fileName: `${file.id}.aml`, data: results.aml},
+                ]));
 
                 break;
             default:
@@ -133,11 +134,13 @@ export default class Syncer {
                 let isIgnored = err.httpResponse && IGNORED_ERRORS.includes(err.httpResponse.statusCode);
                 isIgnored = isIgnored || !!err.isArchieMLError;
 
+                const preThrow = err.aml ? this.save(`${file.id}.aml`, {data: err.aml}) : Promise.resolve();
+
                 if (isIgnored) {
                     log('error ignored');
-                    return null;
+                    return preThrow;
                 } else {
-                    throw err;
+                    return preThrow.then(() => Promise.reject(err));
                 }
             });
     }
@@ -164,6 +167,11 @@ export default class Syncer {
             .then(html => Promise.props({
                 plain: ArchieConverter.convert(html),
                 styled: ArchieConverter.convert(html, {preserve_styles: ['bold', 'italic', 'underline']})
+            }))
+            .then(({ plain, styled }) => ({
+                plain: plain.result,
+                styled: styled.result,
+                aml: plain.aml
             }));
     }
 
@@ -202,19 +210,19 @@ export default class Syncer {
         return result;
     }
 
-    save(name, data) {
-        const fileName = `${name}.json`;
-
+    save(fileName, data) {
         if (data === null) {
             // probably an operational error - don't write the file
             return Promise.resolve();
         }
 
+        const body = fileName.endsWith('.json') ? JSON.stringify(data) : data.data;
+
         return Promise.map(this.outputDirectories, dir => {
             const filePath = path.join(dir, fileName);
 
             return fs
-                .writeFile(filePath, JSON.stringify(data))
+                .writeFile(filePath, body)
                 .then(() => this.events.emit('saved', fileName, data));
         });
     }

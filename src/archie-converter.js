@@ -28,6 +28,10 @@ export default class ArchieConverter {
         });
     }
 
+    static convertText(aml) {
+        return Promise.resolve({ result: archieml.load(aml) });
+    }
+
     static parseHtml(str, options = {}) {
         return new Promise((resolve, reject) => {
             const handler = new htmlparser.DomHandler((error, dom) => {

@@ -30,7 +30,7 @@ export default class SpreadsheetConverter {
 
                     let formattedValue = val ? XLSX.utils.format_cell(val) : null;
 
-                    if (formattedValue && !formattedValue.trim().length) {
+                    if (formattedValue && !formattedValue.toString().trim().length) {
                         formattedValue = null;
                     }
 

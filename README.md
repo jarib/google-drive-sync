@@ -7,6 +7,12 @@ Share a Google document with this daemon, and it will be converted to JSON, save
 
 Inspired by [DriveShaft](http://newsdev.github.io/driveshaft/) and [gudocs](https://github.com/guardian/gudocs).
 
+## Installation
+
+```
+$ npm install -g google-drive-sync
+```
+
 ## Usage
 
 ```

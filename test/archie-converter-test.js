@@ -9,7 +9,7 @@ describe('ArchieConverter', () => {
     describe('.convert', () => {
         it('should convert a document and preserve styles', () => {
             return ArchieConverter.convert(html, {preserve_styles: ['bold', 'italic', 'underline']})
-                .then(result => {
+                .then(({result}) => {
                     assert.equal(result.foo, 'normal key');
                     assert.equal(result.baz, 'formatted <span class="g-doc-italic">italic</span>');
 
@@ -22,7 +22,7 @@ describe('ArchieConverter', () => {
 
         it('should convert a document with no styles', () => {
             return ArchieConverter.convert(html)
-                .then(result => {
+                .then(({result}) => {
                     assert.equal(result.foo, 'normal key');
                     assert.equal(result.baz, 'formatted italic');
 

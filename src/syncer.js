@@ -180,10 +180,12 @@ export default class Syncer {
         const modified = moment(doc.modifiedTime);
         const lag = moment.duration(now.diff(modified));
 
+        const user = doc.lastModifyingUser || doc.sharingUser || {};
+
         const result = {
             user: {
-                name: doc.lastModifyingUser.displayName,
-                email: doc.lastModifyingUser.emailAddress
+                name: user.displayName,
+                email: user.emailAddress
             },
             date: modified.format(),
             version: doc.version,

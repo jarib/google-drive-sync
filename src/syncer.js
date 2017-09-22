@@ -1,6 +1,6 @@
 import debug from 'debug';
 import path from 'path';
-import fs from 'fs-promise';
+import fs from 'fs-extra';
 import Promise from 'bluebird';
 import ArchieConverter from './archie-converter';
 import SpreadsheetConverter from './spreadsheet-converter';

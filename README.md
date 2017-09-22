@@ -17,7 +17,7 @@ $ npm install -g google-drive-sync
 
 ```
 $ google-drive-sync \
-  --out-path /usr/share/nginx/html/gdrive \
+  --out-dir /usr/share/nginx/html/gdrive \
   --credentials ~/.google-credentials.json \
   --daemonize /var/log/gdrive-sync.log \
   --state /var/lib/misc/gdrive-sync.json

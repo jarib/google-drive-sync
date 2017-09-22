@@ -1,6 +1,6 @@
 import assert from 'assert';
 import SpreadsheetConverter from '../src/spreadsheet-converter';
-import fs from 'fs-promise';
+import fs from 'fs-extra';
 
 const xlsx = fs.readFileSync(`${__dirname}/fixtures/17463e-OJc9ojiPp97eZ9YPzYJUj82eYHrjGKceXapeE.xlsx`, 'binary');
 

@@ -1,4 +1,4 @@
-import fs from 'fs-promise';
+import fs from 'fs-extra';
 import moment from 'moment';
 
 const maxItemsInState = 100;
@@ -41,7 +41,7 @@ export default class State {
                 .forEach(id => delete docs[id])
         }
 
-        return fs.writeFile(this.filePath, JSON.stringify(this.data)).then(() => this);
+        return fs.outputJson(this.filePath, this.data).then(() => this);
     }
 
     read() {

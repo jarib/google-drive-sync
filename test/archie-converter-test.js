@@ -1,7 +1,7 @@
 import assert from 'assert';
 import fetch from 'node-fetch';
 import ArchieConverter from '../src/archie-converter';
-import fs from 'fs-promise';
+import fs from 'fs-extra';
 
 const html = fs.readFileSync(`${__dirname}/fixtures/1N-jDmviZUVAW_2Y429Wkr7PIoz6o6kQKVu81C-CoA10.html`, 'utf-8');
 

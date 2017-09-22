@@ -3,7 +3,7 @@
 import yargs from 'yargs';
 import ArchieConverter from './archie-converter';
 import SpreadsheetConverter from './spreadsheet-converter';
-import fs from 'fs-promise';
+import fs from 'fs-extra';
 
 const argv = yargs
     .usage('$0 [options] <file>')

@@ -3,3 +3,4 @@ npm-debug.log
 .node-version
 lib/
 my-plugin.js
+test.sh

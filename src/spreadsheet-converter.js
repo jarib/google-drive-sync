@@ -1,4 +1,7 @@
 import XLSX from 'xlsx';
+import debug from 'debug';
+
+const log = debug('google-drive-sync:spreadsheet-converter');
 
 export default class SpreadsheetConverter {
     static convert(xlsxBinaryString) {

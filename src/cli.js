@@ -70,6 +70,7 @@ if (argv.daemonize) {
     const out = fs.openSync(argv.daemonize, 'w');
 
     daemon({
+        cwd: process.cwd(),
         stdout: out,
         stderr: out
     });

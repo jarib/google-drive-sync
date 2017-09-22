@@ -6,7 +6,7 @@ const log = debug('google-drive-sync:spreadsheet-converter');
 export default class SpreadsheetConverter {
     static convert(xlsxBinaryString) {
         const result = {};
-        const workbook = XLSX.read(xlsxBinaryString, {type: 'binary'});
+        const workbook = XLSX.read(xlsxBinaryString, { type: 'binary' });
 
         workbook.SheetNames.forEach(sn => {
             result[sn] = this._parseSheet(workbook.Sheets[sn]);
@@ -16,31 +16,41 @@ export default class SpreadsheetConverter {
     }
 
     static _parseSheet(sheet) {
-        if (sheet["!ref"] == null) {
+        if (sheet['!ref'] == null) {
             return [];
         } else {
-            const range = XLSX.utils.decode_range(sheet["!ref"]);
+            const range = XLSX.utils.decode_range(sheet['!ref']);
             const cols = [];
             const rows = [];
 
             for (let rowIndex = range.s.r; rowIndex <= range.e.r; ++rowIndex) {
                 const rowName = XLSX.utils.encode_row(rowIndex);
 
-                for (let colIndex = range.s.c; colIndex <= range.e.c; ++colIndex) {
+                for (
+                    let colIndex = range.s.c;
+                    colIndex <= range.e.c;
+                    ++colIndex
+                ) {
                     const colName = XLSX.utils.encode_col(colIndex);
 
                     const val = sheet[colName + rowName];
 
-                    let formattedValue = val ? XLSX.utils.format_cell(val) : null;
+                    let formattedValue = val
+                        ? XLSX.utils.format_cell(val)
+                        : null;
 
-                    if (formattedValue && !formattedValue.toString().trim().length) {
+                    if (
+                        formattedValue &&
+                        !formattedValue.toString().trim().length
+                    ) {
                         formattedValue = null;
                     }
 
                     if (rowIndex === 0) {
                         cols.push(formattedValue);
                     } else {
-                        const row = rows[rowIndex - 1] = rows[rowIndex - 1] || []
+                        const row = (rows[rowIndex - 1] =
+                            rows[rowIndex - 1] || []);
                         row.push(formattedValue);
                     }
                 }

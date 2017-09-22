@@ -25,7 +25,7 @@ export default class Syncer {
         this.outputDirectories = opts.outputDirectory.split(',');
 
         if (!opts.state) {
-            throw new Error(`must specify "state" option`)
+            throw new Error(`must specify "state" option`);
         }
 
         this.state = new State(opts.state);
@@ -39,24 +39,28 @@ export default class Syncer {
             this.state.read(),
             this.client.authorize(), // TODO: re-use JWT tokens but handle expiry
             () => {
-                return this.ensurePageTokenInState().then(::this.fetchChanges)
-        });
+                return this.ensurePageTokenInState().then(::this.fetchChanges);
+            }
+        );
     }
 
     fetchChanges() {
-        return this.client.getChanges(this.state.getPageToken())
+        return this.client
+            .getChanges(this.state.getPageToken())
             .then(::this.handleChanges)
             .then(::this.fetchSpecialFiles)
             .catch(err => this.events.emit('error', err));
-
     }
 
     ensurePageTokenInState() {
         if (this.state.getPageToken()) {
             return Promise.resolve();
         } else {
-            return this.client.getStartPageToken()
-                .then(res => this.state.save({pageToken: res.startPageToken}));
+            return this.client
+                .getStartPageToken()
+                .then(res =>
+                    this.state.save({ pageToken: res.startPageToken })
+                );
         }
     }
 
@@ -65,36 +69,39 @@ export default class Syncer {
     }
 
     handleChanges(list) {
-        const changes = list.changes.filter(i => !i.removed && mimeTypes.indexOf(i.file.mimeType) !== -1)
+        const changes = list.changes.filter(
+            i => !i.removed && mimeTypes.indexOf(i.file.mimeType) !== -1
+        );
 
-        return Promise.map(
-            changes,
-            ::this.processChange,
-            {concurrency: 3}
-        )
-        .then(() => this.state.save({
-            pageToken: list.nextPageToken || list.newStartPageToken,
-            lastCheck: moment().format()
-        }))
-        .then(state => this.events.emit('synced', state.data));
+        return Promise.map(changes, ::this.processChange, { concurrency: 3 })
+            .then(() =>
+                this.state.save({
+                    pageToken: list.nextPageToken || list.newStartPageToken,
+                    lastCheck: moment().format()
+                })
+            )
+            .then(state => this.events.emit('synced', state.data));
     }
 
     fetchSpecialFiles() {
-        const ids = process.env.GDRIVE_ALWAYS_FETCH ? process.env.GDRIVE_ALWAYS_FETCH.split(',') : []
+        const ids = process.env.GDRIVE_ALWAYS_FETCH
+            ? process.env.GDRIVE_ALWAYS_FETCH.split(',')
+            : [];
 
         return Promise.map(
             ids,
             id => this.client.getFile(id).then(::this.downloadFile),
-            {concurrency: 1}
-        )
+            { concurrency: 1 }
+        );
     }
 
     processChange(change) {
         return this.client
             .getFile(change.fileId)
             .then(file =>
-                this.downloadFile(file)
-                    .then(() => this.state.setFile(change.fileId, { change, file }))
+                this.downloadFile(file).then(() =>
+                    this.state.setFile(change.fileId, { change, file })
+                )
             );
     }
 
@@ -103,38 +110,49 @@ export default class Syncer {
 
         switch (file.mimeType) {
             case 'application/vnd.google-apps.spreadsheet':
-                promise = this.convertSpreadsheet(file).then(data => ([{fileName: `${file.id}.json`, data}]));
+                promise = this.convertSpreadsheet(file).then(data => [
+                    { fileName: `${file.id}.json`, data }
+                ]);
                 break;
             case 'application/vnd.google-apps.document':
-                promise = this.convertDocument(file).then(results => ([
-                    {fileName: `${file.id}.json`, data: results.plain},
-                    {fileName: `${file.id}.styled.json`, data: results.styled},
-                    {fileName: `${file.id}.aml`, data: results.aml},
-                ]));
+                promise = this.convertDocument(file).then(results => [
+                    { fileName: `${file.id}.json`, data: results.plain },
+                    {
+                        fileName: `${file.id}.styled.json`,
+                        data: results.styled
+                    },
+                    { fileName: `${file.id}.aml`, data: results.aml }
+                ]);
 
                 break;
             default:
-                throw new Error(`unknown mime type: ${file.mimeType}`)
-
-        };
+                throw new Error(`unknown mime type: ${file.mimeType}`);
+        }
 
         const modification = this.getModification(file);
 
         return promise
             .then(results => {
-                return Promise.each(
-                    results,
-                    ({fileName, data}) => this.save(fileName, { title: file.name, modification, data })
-                )
+                return Promise.each(results, ({ fileName, data }) =>
+                    this.save(fileName, {
+                        title: file.name,
+                        modification,
+                        data
+                    })
+                );
             })
             .catch(err => {
                 console.error(file.webViewLink, err.message);
                 this.events.emit('error', err);
 
-                let isIgnored = err.httpResponse && IGNORED_ERRORS.includes(err.httpResponse.statusCode);
+                let isIgnored =
+                    err.httpResponse &&
+                    IGNORED_ERRORS.includes(err.httpResponse.statusCode);
                 isIgnored = isIgnored || !!err.isArchieMLError;
 
-                const preThrow = err.aml ? this.save(`${file.id}.aml`, {data: err.aml}) : Promise.resolve();
+                const preThrow = err.aml
+                    ? this.save(`${file.id}.aml`, { data: err.aml })
+                    : Promise.resolve();
 
                 if (isIgnored) {
                     log('error ignored');
@@ -147,7 +165,10 @@ export default class Syncer {
 
     convertSpreadsheet(doc) {
         return new Promise((resolve, reject) => {
-            const stream = this.client.getExportFileStream(doc.id, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            const stream = this.client.getExportFileStream(
+                doc.id,
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            );
             const writable = new streamBuffers.WritableStreamBuffer();
 
             stream
@@ -159,15 +180,20 @@ export default class Syncer {
                 })
                 .on('error', reject)
                 .pipe(writable);
-        }).then(buf => SpreadsheetConverter.convert(buf.toString('binary')))
+        }).then(buf => SpreadsheetConverter.convert(buf.toString('binary')));
     }
 
     convertDocument(doc) {
-        return this.client.exportFile(doc.id, 'text/html')
-            .then(html => Promise.props({
-                plain: ArchieConverter.convert(html),
-                styled: ArchieConverter.convert(html, {preserve_styles: ['bold', 'italic', 'underline']})
-            }))
+        return this.client
+            .exportFile(doc.id, 'text/html')
+            .then(html =>
+                Promise.props({
+                    plain: ArchieConverter.convert(html),
+                    styled: ArchieConverter.convert(html, {
+                        preserve_styles: ['bold', 'italic', 'underline']
+                    })
+                })
+            )
             .then(({ plain, styled }) => ({
                 plain: plain.result,
                 styled: styled.result,
@@ -201,11 +227,13 @@ export default class Syncer {
         if (previous && previous.file && previous.file.version) {
             result.lastUpdate = {
                 version: previous.file.version,
-                changeTime: previous.change ? moment(previous.change.time).format() : null,
+                changeTime: previous.change
+                    ? moment(previous.change.time).format()
+                    : null
             };
 
             if (+previous.file.version && +doc.version) {
-                result.versionDiff = +(doc.version) - +(previous.file.version);
+                result.versionDiff = +doc.version - +previous.file.version;
             }
         }
 
@@ -218,7 +246,9 @@ export default class Syncer {
             return Promise.resolve();
         }
 
-        const body = fileName.endsWith('.json') ? JSON.stringify(data) : data.data;
+        const body = fileName.endsWith('.json')
+            ? JSON.stringify(data)
+            : data.data;
 
         return Promise.map(this.outputDirectories, dir => {
             const filePath = path.join(dir, fileName);

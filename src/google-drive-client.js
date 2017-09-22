@@ -7,12 +7,10 @@ export default class GoogleDriveClient {
     constructor(opts) {
         const { credentials } = opts;
 
-        this.jwt = new google.auth.JWT(
-            credentials.client_email,
-            null,
-            credentials.private_key,
-            ['https://www.googleapis.com/auth/drive']
-        );
+        this.jwt = new google.auth
+            .JWT(credentials.client_email, null, credentials.private_key, [
+            'https://www.googleapis.com/auth/drive'
+        ]);
     }
 
     isAuthorized() {
@@ -20,7 +18,7 @@ export default class GoogleDriveClient {
     }
 
     authorize() {
-        log('authorizing')
+        log('authorizing');
 
         return new Promise((resolve, reject) => {
             this.jwt.authorize((err, tokens) => {
@@ -44,12 +42,15 @@ export default class GoogleDriveClient {
         return new Promise((resolve, reject) => {
             this._assertAuthorized();
 
-            this.drive.files.get({
-                fileId,
-                fields: fields.length ? fields.join(',') : '*'
-            }, (err, doc) => {
-                err ? reject(err) : resolve(doc);
-            });
+            this.drive.files.get(
+                {
+                    fileId,
+                    fields: fields.length ? fields.join(',') : '*'
+                },
+                (err, doc) => {
+                    err ? reject(err) : resolve(doc);
+                }
+            );
         });
     }
 
@@ -59,7 +60,7 @@ export default class GoogleDriveClient {
         return new Promise((resolve, reject) => {
             this._assertAuthorized();
 
-            this.drive.files.export({fileId: key, mimeType}, (err, doc) => {
+            this.drive.files.export({ fileId: key, mimeType }, (err, doc) => {
                 err ? reject(err) : resolve(doc);
             });
         });
@@ -69,7 +70,7 @@ export default class GoogleDriveClient {
         log(`exporting stream ${key} as ${mimeType}`);
 
         this._assertAuthorized();
-        return this.drive.files.export({fileId: key, mimeType});
+        return this.drive.files.export({ fileId: key, mimeType });
     }
 
     getUrl(uri) {
@@ -78,9 +79,9 @@ export default class GoogleDriveClient {
         return new Promise((resolve, reject) => {
             this._assertAuthorized();
 
-            this.jwt.request({method: 'GET', uri}, (err, body, response) => {
+            this.jwt.request({ method: 'GET', uri }, (err, body, response) => {
                 err ? reject(err) : resolve(response);
-            })
+            });
         });
     }
 
@@ -90,7 +91,7 @@ export default class GoogleDriveClient {
 
             this.drive.changes.getStartPageToken({}, (err, res) => {
                 err ? reject(err) : resolve(res);
-            })
+            });
         });
     }
 
@@ -100,9 +101,9 @@ export default class GoogleDriveClient {
         return new Promise((resolve, reject) => {
             this._assertAuthorized();
 
-            this.drive.changes.list({pageToken}, (err, changes) => {
+            this.drive.changes.list({ pageToken }, (err, changes) => {
                 err ? reject(err) : resolve(changes);
-            })
+            });
         });
     }
 

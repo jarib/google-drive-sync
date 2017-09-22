@@ -29,26 +29,32 @@ export default class State {
     }
 
     save(stateUpdate) {
-        this.data = {...this.data, ...stateUpdate};
+        this.data = { ...this.data, ...stateUpdate };
         const { docs } = this.data;
 
         const ids = Object.keys(docs);
 
         if (ids.length > maxItemsInState) {
-            ids.filter(id => docs[id].file && docs[id].file.modifiedDate)
-                .sort((a, b) => moment(docs[b].file.modifiedDate).valueOf() - moment(docs[a].file.modifiedDate).valueOf())
+            ids
+                .filter(id => docs[id].file && docs[id].file.modifiedDate)
+                .sort(
+                    (a, b) =>
+                        moment(docs[b].file.modifiedDate).valueOf() -
+                        moment(docs[a].file.modifiedDate).valueOf()
+                )
                 .slice(maxItemsInState)
-                .forEach(id => delete docs[id])
+                .forEach(id => delete docs[id]);
         }
 
         return fs.outputJson(this.filePath, this.data).then(() => this);
     }
 
     read() {
-        return fs.readFile(this.filePath, 'utf-8')
+        return fs
+            .readFile(this.filePath, 'utf-8')
             .catch(err => null)
             .then(JSON.parse)
-            .then(data => this.data = data || this.data)
+            .then(data => (this.data = data || this.data))
             .then(() => this.data);
     }
 }

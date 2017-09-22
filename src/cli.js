@@ -16,45 +16,47 @@ const log = debug('google-drive-sync:cli');
 const httpLog = debug('google-drive-sync:http');
 
 const argv = yargs
-    .usage('Usage: $0 --out-dir [dir] --credentials [file.json] --daemonize [log-path] --interval [timestring] --state [state.json]')
+    .usage(
+        'Usage: $0 --out-dir [dir] --credentials [file.json] --daemonize [log-path] --interval [timestring] --state [state.json]'
+    )
     .option('out-dir', {
-      type: 'string',
-      describe: 'Ouput directory for JSON files.'
+        type: 'string',
+        describe: 'Ouput directory for JSON files.'
     })
     .option('credentials', {
-      type: 'string',
-      describe: 'Path to Google API credentials (as JSON)'
+        type: 'string',
+        describe: 'Path to Google API credentials (as JSON)'
     })
     .option('daemonize', {
-      type: 'string',
-      describe: 'Run as daemon and write output to the given log file.'
+        type: 'string',
+        describe: 'Run as daemon and write output to the given log file.'
     })
     .option('interval', {
-      type: 'string',
-      describe: 'Polling interval. If not set, run one check then exit (e.g. for cron).'
+        type: 'string',
+        describe:
+            'Polling interval. If not set, run one check then exit (e.g. for cron).'
     })
     .option('state', {
-      type: 'string',
-      describe: 'Path to a file where we should save state.'
+        type: 'string',
+        describe: 'Path to a file where we should save state.'
     })
     .option('plugins', {
-      type: 'array',
-      describe: 'List of plugins to load.'
+        type: 'array',
+        describe: 'List of plugins to load.'
     })
     .demand(['out-dir', 'credentials'])
-    .help('help')
-    .argv;
+    .help('help').argv;
 
-const credentials = JSON.parse(fs.readFileSync(argv.credentials, 'utf-8'))
+const credentials = JSON.parse(fs.readFileSync(argv.credentials, 'utf-8'));
 
 const syncer = new Syncer({
-    client: new GoogleDriveClient({credentials}),
+    client: new GoogleDriveClient({ credentials }),
     outputDirectory: argv.outDir,
     state: argv.state
 });
 
 syncer.on('error', err => {
-    console.error(`${moment().format()}: ${err}\n${err.stack}`)
+    console.error(`${moment().format()}: ${err}\n${err.stack}`);
 
     if (err.httpResponse) {
         httpLog(err.httpResponse.statusCode, err.httpResponse.statusMessage);
@@ -74,12 +76,12 @@ if (argv.daemonize) {
 }
 
 if (argv.plugins) {
-  const cwd = process.cwd();
+    const cwd = process.cwd();
 
-  argv.plugins.forEach(pluginPath => {
-    const p = require(path.resolve(cwd, pluginPath));
-    p(syncer);
-  })
+    argv.plugins.forEach(pluginPath => {
+        const p = require(path.resolve(cwd, pluginPath));
+        p(syncer);
+    });
 }
 
 if (argv.interval) {
@@ -90,8 +92,8 @@ if (argv.interval) {
     }
 
     function sync() {
-        syncer.sync().then(() => setTimeout(sync, interval * 1000))
-    };
+        syncer.sync().then(() => setTimeout(sync, interval * 1000));
+    }
 
     sync();
 } else {

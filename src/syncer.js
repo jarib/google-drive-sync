@@ -124,7 +124,7 @@ export default class Syncer {
             .then(results => {
                 return Promise.each(
                     results,
-                    ({fileName, data}) => this.save(fileName, { modification, data })
+                    ({fileName, data}) => this.save(fileName, { title: file.name, modification, data })
                 )
             })
             .catch(err => {

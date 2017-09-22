@@ -2,8 +2,8 @@
 
 import yargs from 'yargs';
 import 'babel-polyfill';
-import 'timestring';
 import fs from 'fs';
+import ms from 'ms';
 import GoogleDriveClient from './google-drive-client';
 import Syncer from './syncer';
 import url from 'url';
@@ -86,7 +86,7 @@ if (argv.plugins) {
 }
 
 if (argv.interval) {
-    const interval = argv.interval.toString().parseTime();
+    const interval = ms(argv.interval);
 
     if (interval < 5) {
         throw new Error(`interval is less than 5 seconds`);

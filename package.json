@@ -55,8 +55,8 @@
     "htmlparser2": "^3.9.0",
     "lodash.zip": "^4.0.0",
     "moment": "^2.12.0",
+    "ms": "^2.0.0",
     "stream-buffers": "^3.0.0",
-    "timestring": "^5.0.0",
     "underscore": "^1.8.3",
     "xlsx": "^0.11.3",
     "yargs": "^9.0.1"

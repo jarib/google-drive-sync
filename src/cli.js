@@ -88,12 +88,12 @@ if (argv.plugins) {
 if (argv.interval) {
     const interval = ms(argv.interval);
 
-    if (interval < 5) {
+    if (interval < 5000) {
         throw new Error(`interval is less than 5 seconds`);
     }
 
     function sync() {
-        syncer.sync().then(() => setTimeout(sync, interval * 1000));
+        syncer.sync().then(() => setTimeout(sync, interval));
     }
 
     sync();

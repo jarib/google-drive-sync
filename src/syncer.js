@@ -121,7 +121,8 @@ export default class Syncer {
                         fileName: `${file.id}.styled.json`,
                         data: results.styled
                     },
-                    { fileName: `${file.id}.aml`, data: results.aml }
+                    { fileName: `${file.id}.aml`, data: results.aml },
+                    { fileName: `${file.id}.html`, data: results.html },
                 ]);
 
                 break;
@@ -188,16 +189,18 @@ export default class Syncer {
             .exportFile(doc.id, 'text/html')
             .then(html =>
                 Promise.props({
+                    html,
                     plain: ArchieConverter.convert(html),
                     styled: ArchieConverter.convert(html, {
                         preserve_styles: ['bold', 'italic', 'underline']
                     })
                 })
             )
-            .then(({ plain, styled }) => ({
+            .then(({ plain, styled, html }) => ({
                 plain: plain.result,
                 styled: styled.result,
-                aml: plain.aml
+                aml: plain.aml,
+                html
             }));
     }
 

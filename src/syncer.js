@@ -1,20 +1,19 @@
-import debug from 'debug';
-import path from 'path';
-import fs from 'fs-extra';
 import Promise from 'bluebird';
+import debug from 'debug';
+import EventEmitter from 'events';
+import fs from 'fs-extra';
+import moment from 'moment';
+import path from 'path';
+import streamBuffers from 'stream-buffers';
 import ArchieConverter from './archie-converter';
 import SpreadsheetConverter from './spreadsheet-converter';
-import moment from 'moment';
-import EventEmitter from 'events';
-import zip from 'lodash.zip';
-import streamBuffers from 'stream-buffers';
 import State from './state';
 
 const log = debug('google-drive-sync:syncer');
 
 const mimeTypes = [
     'application/vnd.google-apps.spreadsheet',
-    'application/vnd.google-apps.document'
+    'application/vnd.google-apps.document',
 ];
 
 const IGNORED_ERRORS = [429];
@@ -58,9 +57,7 @@ export default class Syncer {
         } else {
             return this.client
                 .getStartPageToken()
-                .then(res =>
-                    this.state.save({ pageToken: res.startPageToken })
-                );
+                .then(res => this.state.save({ pageToken: res.startPageToken }));
         }
     }
 
@@ -77,7 +74,7 @@ export default class Syncer {
             .then(() =>
                 this.state.save({
                     pageToken: list.nextPageToken || list.newStartPageToken,
-                    lastCheck: moment().format()
+                    lastCheck: moment().format(),
                 })
             )
             .then(state => this.events.emit('synced', state.data));
@@ -111,7 +108,7 @@ export default class Syncer {
         switch (file.mimeType) {
             case 'application/vnd.google-apps.spreadsheet':
                 promise = this.convertSpreadsheet(file).then(data => [
-                    { fileName: `${file.id}.json`, data }
+                    { fileName: `${file.id}.json`, data },
                 ]);
                 break;
             case 'application/vnd.google-apps.document':
@@ -119,7 +116,7 @@ export default class Syncer {
                     { fileName: `${file.id}.json`, data: results.plain },
                     {
                         fileName: `${file.id}.styled.json`,
-                        data: results.styled
+                        data: results.styled,
                     },
                     { fileName: `${file.id}.aml`, data: results.aml },
                     { fileName: `${file.id}.html`, data: results.html },
@@ -138,7 +135,7 @@ export default class Syncer {
                     this.save(fileName, {
                         title: file.name,
                         modification,
-                        data
+                        data,
                     })
                 );
             })
@@ -192,15 +189,15 @@ export default class Syncer {
                     html,
                     plain: ArchieConverter.convert(html),
                     styled: ArchieConverter.convert(html, {
-                        preserve_styles: ['bold', 'italic', 'underline']
-                    })
+                        preserve_styles: ['bold', 'italic', 'underline'],
+                    }),
                 })
             )
             .then(({ plain, styled, html }) => ({
                 plain: plain.result,
                 styled: styled.result,
                 aml: plain.aml,
-                html
+                html,
             }));
     }
 
@@ -214,15 +211,15 @@ export default class Syncer {
         const result = {
             user: {
                 name: user.displayName,
-                email: user.emailAddress
+                email: user.emailAddress,
             },
             date: modified.format(),
             version: doc.version,
             downloadTime: now.format(),
             downloadLag: {
                 ms: lag.valueOf(),
-                human: lag.humanize()
-            }
+                human: lag.humanize(),
+            },
         };
 
         const previous = this.state.getFile(doc.id);
@@ -232,7 +229,7 @@ export default class Syncer {
                 version: previous.file.version,
                 changeTime: previous.change
                     ? moment(previous.change.time).format()
-                    : null
+                    : null,
             };
 
             if (+previous.file.version && +doc.version) {
@@ -249,9 +246,7 @@ export default class Syncer {
             return Promise.resolve();
         }
 
-        const body = fileName.endsWith('.json')
-            ? JSON.stringify(data)
-            : data.data;
+        const body = fileName.endsWith('.json') ? JSON.stringify(data) : data.data;
 
         return Promise.map(this.outputDirectories, dir => {
             const filePath = path.join(dir, fileName);

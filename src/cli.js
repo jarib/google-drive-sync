@@ -21,28 +21,28 @@ const argv = yargs
     )
     .option('out-dir', {
         type: 'string',
-        describe: 'Ouput directory for JSON files.'
+        describe: 'Ouput directory for JSON files.',
     })
     .option('credentials', {
         type: 'string',
-        describe: 'Path to Google API credentials (as JSON)'
+        describe: 'Path to Google API credentials (as JSON)',
     })
     .option('daemonize', {
         type: 'string',
-        describe: 'Run as daemon and write output to the given log file.'
+        describe: 'Run as daemon and write output to the given log file.',
     })
     .option('interval', {
         type: 'string',
         describe:
-            'Polling interval. If not set, run one check then exit (e.g. for cron).'
+            'Polling interval (e.g. "15s"). If not set, run one check then exit (e.g. for cron).',
     })
     .option('state', {
         type: 'string',
-        describe: 'Path to a file where we should save state.'
+        describe: 'Path to a file where we should save state.',
     })
     .option('plugins', {
         type: 'array',
-        describe: 'List of plugins to load.'
+        describe: 'List of plugins to load.',
     })
     .demand(['out-dir', 'credentials'])
     .help('help').argv;
@@ -52,7 +52,7 @@ const credentials = JSON.parse(fs.readFileSync(argv.credentials, 'utf-8'));
 const syncer = new Syncer({
     client: new GoogleDriveClient({ credentials }),
     outputDirectory: argv.outDir,
-    state: argv.state
+    state: argv.state,
 });
 
 syncer.on('error', err => {
@@ -72,7 +72,7 @@ if (argv.daemonize) {
     daemon({
         cwd: process.cwd(),
         stdout: out,
-        stderr: out
+        stderr: out,
     });
 }
 

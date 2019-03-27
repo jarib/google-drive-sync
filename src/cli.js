@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import yargs from 'yargs';
-import 'babel-polyfill';
 import fs from 'fs';
 import ms from 'ms';
 import GoogleDriveClient from './google-drive-client';

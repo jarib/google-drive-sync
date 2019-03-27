@@ -1,6 +1,6 @@
 {
   "name": "google-drive-sync",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Share your Google Drive files with this daemon to have them saved to disk as JSON.",
   "bin": {
     "google-drive-sync": "lib/cli.js",
@@ -59,7 +59,6 @@
     "@babel/cli": "^7.2.3",
     "@babel/core": "^7.4.0",
     "@babel/plugin-proposal-class-properties": "^7.4.0",
-    "@babel/polyfill": "^7.4.0",
     "@babel/preset-env": "^7.4.2",
     "@babel/register": "^7.4.0",
     "mocha": "^6.0.2",

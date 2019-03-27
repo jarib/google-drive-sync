@@ -38,18 +38,18 @@ export default class Syncer {
             this.state.read(),
             this.client.authorize(), // TODO: re-use JWT tokens but handle expiry
             () => {
-                return this.ensurePageTokenInState().then(::this.fetchChanges);
+                return this.ensurePageTokenInState().then(this.fetchChanges);
             }
         );
     }
 
-    fetchChanges() {
+    fetchChanges = () => {
         return this.client
             .getChanges(this.state.getPageToken())
-            .then(::this.handleChanges)
-            .then(::this.fetchSpecialFiles)
+            .then(this.handleChanges)
+            .then(this.fetchSpecialFiles)
             .catch(err => this.events.emit('error', err));
-    }
+    };
 
     ensurePageTokenInState() {
         if (this.state.getPageToken()) {
@@ -65,7 +65,7 @@ export default class Syncer {
         this.events.on(...args);
     }
 
-    handleChanges(list) {
+    handleChanges = list => {
         const changes = list.changes.filter(
             i => !i.removed && mimeTypes.indexOf(i.file.mimeType) !== -1
         );
@@ -78,9 +78,9 @@ export default class Syncer {
                 })
             )
             .then(state => this.events.emit('synced', state.data));
-    }
+    };
 
-    fetchSpecialFiles() {
+    fetchSpecialFiles = () => {
         const ids = process.env.GDRIVE_ALWAYS_FETCH
             ? process.env.GDRIVE_ALWAYS_FETCH.split(',')
             : [];
@@ -90,7 +90,7 @@ export default class Syncer {
             id => this.client.getFile(id).then(::this.downloadFile),
             { concurrency: 1 }
         );
-    }
+    };
 
     processChange(change) {
         return this.client

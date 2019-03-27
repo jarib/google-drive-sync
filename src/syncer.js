@@ -70,7 +70,7 @@ export default class Syncer {
             i => !i.removed && mimeTypes.indexOf(i.file.mimeType) !== -1
         );
 
-        return Promise.map(changes, ::this.processChange, { concurrency: 3 })
+        return Promise.map(changes, this.processChange, { concurrency: 3 })
             .then(() =>
                 this.state.save({
                     pageToken: list.nextPageToken || list.newStartPageToken,
@@ -87,12 +87,12 @@ export default class Syncer {
 
         return Promise.map(
             ids,
-            id => this.client.getFile(id).then(::this.downloadFile),
+            id => this.client.getFile(id).then(this.downloadFile),
             { concurrency: 1 }
         );
     };
 
-    processChange(change) {
+    processChange = change => {
         return this.client
             .getFile(change.fileId)
             .then(file =>
@@ -100,9 +100,9 @@ export default class Syncer {
                     this.state.setFile(change.fileId, { change, file })
                 )
             );
-    }
+    };
 
-    downloadFile(file) {
+    downloadFile = file => {
         let promise = null;
 
         switch (file.mimeType) {
@@ -159,7 +159,7 @@ export default class Syncer {
                     return preThrow.then(() => Promise.reject(err));
                 }
             });
-    }
+    };
 
     convertSpreadsheet(doc) {
         return new Promise((resolve, reject) => {

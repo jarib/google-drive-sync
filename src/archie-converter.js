@@ -14,7 +14,7 @@ export default class ArchieConverter {
             try {
                 return {
                     result: archieml.load(aml),
-                    aml: aml
+                    aml: aml,
                 };
             } catch (err) {
                 err.isArchieMLError = true;
@@ -47,19 +47,19 @@ export default class ArchieConverter {
                     if (_.include(options.preserve_styles, 'bold')) {
                         style_config['font-weight:bold'] = {
                             className: 'g-doc-bold',
-                            tag: 'strong'
+                            tag: 'strong',
                         };
                     }
                     if (_.include(options.preserve_styles, 'italic')) {
                         style_config['font-style:italic'] = {
                             className: 'g-doc-italic',
-                            tag: 'em'
+                            tag: 'em',
                         };
                     }
                     if (_.include(options.preserve_styles, 'underline')) {
                         style_config['text-decoration:underline'] = {
                             className: 'g-doc-underline',
-                            tag: 'u'
+                            tag: 'u',
                         };
                     }
                 }
@@ -70,19 +70,17 @@ export default class ArchieConverter {
                             func;
 
                         _.each(tag.children, function(child) {
-                            if (
-                                (func = tagHandlers[child.name || child.type])
-                            ) {
+                            if ((func = tagHandlers[child.name || child.type])) {
                                 var component = {
                                     value: func(child),
                                     tags: [],
-                                    classes: []
+                                    classes: [],
                                 };
 
                                 let tag_styles;
 
                                 if (tag.attribs && tag.attribs.style) {
-                                    var tag_styles = _.intersection(
+                                    tag_styles = _.intersection(
                                         tag.attribs.style.split(';'),
                                         Object.keys(style_config)
                                     );
@@ -99,10 +97,7 @@ export default class ArchieConverter {
                                             tag.parent.name === 'p'
                                         ) {
                                             // entire line, ignore
-                                            log(
-                                                'ignored entire line',
-                                                component
-                                            );
+                                            log('ignored entire line', component);
                                         } else if (
                                             tag.next === null &&
                                             tag.prev !== null
@@ -113,9 +108,8 @@ export default class ArchieConverter {
                                                     _.map(tag_styles, function(
                                                         style
                                                     ) {
-                                                        return style_config[
-                                                            style
-                                                        ].className;
+                                                        return style_config[style]
+                                                            .className;
                                                     })
                                                 )
                                             );
@@ -137,9 +131,8 @@ export default class ArchieConverter {
                                                     _.map(tag_styles, function(
                                                         style
                                                     ) {
-                                                        return style_config[
-                                                            style
-                                                        ].tag;
+                                                        return style_config[style]
+                                                            .tag;
                                                     })
                                                 )
                                             );
@@ -179,8 +172,8 @@ export default class ArchieConverter {
                     text: function(textTag) {
                         return [
                             {
-                                value: textTag.data
-                            }
+                                value: textTag.data,
+                            },
                         ];
                     },
                     span: function(spanTag) {
@@ -197,7 +190,7 @@ export default class ArchieConverter {
                             return {
                                 value: '',
                                 classes: [],
-                                tags: []
+                                tags: [],
                             };
                         }
 
@@ -216,12 +209,12 @@ export default class ArchieConverter {
                         vals.unshift({
                             value: '<a href="' + url + '">',
                             classes: [],
-                            tags: []
+                            tags: [],
                         });
                         vals.push({
                             value: '</a>',
                             classes: [],
-                            tags: []
+                            tags: [],
                         });
                         return vals;
                     },
@@ -241,10 +234,10 @@ export default class ArchieConverter {
                     img: function(imgTag) {
                         return [
                             {
-                                value: imgTag.attribs.src
-                            }
+                                value: imgTag.attribs.src,
+                            },
                         ];
-                    }
+                    },
                 };
 
                 ['ul', 'ol'].forEach(function(tag) {
@@ -274,19 +267,15 @@ export default class ArchieConverter {
                                 )
                             ).sort();
                             flattenedComponent.tags = _.unique(
-                                component.tags.concat(
-                                    flattenedComponent.tags || []
-                                )
+                                component.tags.concat(flattenedComponent.tags || [])
                             ).sort();
 
                             flattenedComponent = flattenComponents([
-                                flattenedComponent
+                                flattenedComponent,
                             ])[0];
                             return flattenedComponent;
                         } else {
-                            component.value = flattenComponents(
-                                component.value
-                            );
+                            component.value = flattenComponents(component.value);
                         }
                         return component;
                     });
@@ -347,29 +336,23 @@ export default class ArchieConverter {
 
                                         if (_.isArray(last.value)) {
                                             if (last.newline)
-                                                _.last(
-                                                    last.value
-                                                ).newline = true;
+                                                _.last(last.value).newline = true;
                                             array = array.concat(last.value);
                                         } else {
                                             array.push({
                                                 value: [_.extend({}, last)],
                                                 tags: [],
-                                                classes: []
+                                                classes: [],
                                             });
                                         }
 
                                         if (_.isArray(component.value)) {
-                                            array = array.concat(
-                                                component.value
-                                            );
+                                            array = array.concat(component.value);
                                         } else {
                                             array.push({
-                                                value: [
-                                                    _.extend({}, component)
-                                                ],
+                                                value: [_.extend({}, component)],
                                                 tags: [],
-                                                classes: []
+                                                classes: [],
                                             });
                                         }
 

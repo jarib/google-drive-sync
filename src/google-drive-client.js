@@ -1,16 +1,11 @@
-import google from 'googleapis';
+import { google } from 'googleapis';
 import debug from 'debug';
 
 const log = debug('google-drive-sync:client');
 
 export default class GoogleDriveClient {
     constructor(opts) {
-        const { credentials } = opts;
-
-        this.jwt = new google.auth
-            .JWT(credentials.client_email, null, credentials.private_key, [
-            'https://www.googleapis.com/auth/drive'
-        ]);
+        this.credentials = opts.credentials;
     }
 
     isAuthorized() {
@@ -20,20 +15,17 @@ export default class GoogleDriveClient {
     authorize() {
         log('authorizing');
 
-        return new Promise((resolve, reject) => {
-            this.jwt.authorize((err, tokens) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    this.drive = google.drive({
-                        version: 'v3',
-                        auth: this.jwt
-                    });
-
-                    resolve(this);
-                }
+        return google.auth
+            .getClient({
+                credentials: this.credentials,
+                scopes: ['https://www.googleapis.com/auth/drive'],
+            })
+            .then(client => {
+                this.drive = google.drive({
+                    version: 'v3',
+                    auth: client,
+                });
             });
-        });
     }
 
     getFile(fileId, fields = []) {
@@ -45,10 +37,10 @@ export default class GoogleDriveClient {
             this.drive.files.get(
                 {
                     fileId,
-                    fields: fields.length ? fields.join(',') : '*'
+                    fields: fields.length ? fields.join(',') : '*',
                 },
                 (err, doc) => {
-                    err ? reject(err) : resolve(doc);
+                    err ? reject(err) : resolve(doc.data);
                 }
             );
         });
@@ -61,7 +53,7 @@ export default class GoogleDriveClient {
             this._assertAuthorized();
 
             this.drive.files.export({ fileId: key, mimeType }, (err, doc) => {
-                err ? reject(err) : resolve(doc);
+                err ? reject(err) : resolve(doc.data);
             });
         });
     }
@@ -70,7 +62,14 @@ export default class GoogleDriveClient {
         log(`exporting stream ${key} as ${mimeType}`);
 
         this._assertAuthorized();
-        return this.drive.files.export({ fileId: key, mimeType });
+        return this.drive.files
+            .export(
+                { fileId: key, mimeType },
+                {
+                    responseType: 'stream',
+                }
+            )
+            .then(res => res.data);
     }
 
     getUrl(uri) {
@@ -79,8 +78,8 @@ export default class GoogleDriveClient {
         return new Promise((resolve, reject) => {
             this._assertAuthorized();
 
-            this.jwt.request({ method: 'GET', uri }, (err, body, response) => {
-                err ? reject(err) : resolve(response);
+            this.client.request({ method: 'GET', uri }, (err, body, response) => {
+                err ? reject(err) : resolve(response.data);
             });
         });
     }
@@ -90,7 +89,7 @@ export default class GoogleDriveClient {
             this._assertAuthorized();
 
             this.drive.changes.getStartPageToken({}, (err, res) => {
-                err ? reject(err) : resolve(res);
+                err ? reject(err) : resolve(res.data);
             });
         });
     }
@@ -102,7 +101,7 @@ export default class GoogleDriveClient {
             this._assertAuthorized();
 
             this.drive.changes.list({ pageToken }, (err, changes) => {
-                err ? reject(err) : resolve(changes);
+                err ? reject(err) : resolve(changes.data);
             });
         });
     }

@@ -57,7 +57,7 @@ export default class Syncer {
         } else {
             return this.client
                 .getStartPageToken()
-                .then(res => this.state.save({ pageToken: res.startPageToken }));
+                .then(res => this.state.save({ pageToken: res.startPageToken - 1 }));
         }
     }
 
@@ -66,6 +66,7 @@ export default class Syncer {
     }
 
     handleChanges = list => {
+        log(list);
         const changes = list.changes.filter(
             i => !i.removed && mimeTypes.indexOf(i.file.mimeType) !== -1
         );
@@ -107,6 +108,7 @@ export default class Syncer {
 
         switch (file.mimeType) {
             case 'application/vnd.google-apps.spreadsheet':
+            case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
                 promise = this.convertSpreadsheet(file).then(data => [
                     { fileName: `${file.id}.json`, data },
                 ]);
@@ -163,21 +165,25 @@ export default class Syncer {
 
     convertSpreadsheet(doc) {
         return new Promise((resolve, reject) => {
-            const stream = this.client.getExportFileStream(
-                doc.id,
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-            );
-            const writable = new streamBuffers.WritableStreamBuffer();
+            this.client
+                .getExportFileStream(
+                    doc.id,
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                )
+                .then(stream => {
+                    log(stream);
+                    const writable = new streamBuffers.WritableStreamBuffer();
 
-            stream
-                .on('end', () => {
-                    log('end stream');
-                    const buf = writable.getContents();
-                    writable.end();
-                    resolve(buf);
-                })
-                .on('error', reject)
-                .pipe(writable);
+                    stream
+                        .on('end', () => {
+                            log('end stream');
+                            const buf = writable.getContents();
+                            writable.end();
+                            resolve(buf);
+                        })
+                        .on('error', reject)
+                        .pipe(writable);
+                });
         }).then(buf => SpreadsheetConverter.convert(buf.toString('binary')));
     }
 

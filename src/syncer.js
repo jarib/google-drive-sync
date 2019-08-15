@@ -66,7 +66,6 @@ export default class Syncer {
     }
 
     handleChanges = list => {
-        log(list);
         const changes = list.changes.filter(
             i => !i.removed && mimeTypes.indexOf(i.file.mimeType) !== -1
         );

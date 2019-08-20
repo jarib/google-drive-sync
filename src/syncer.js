@@ -66,9 +66,13 @@ export default class Syncer {
     }
 
     handleChanges = list => {
+        log('found changes', list.changes);
+
         const changes = list.changes.filter(
             i => !i.removed && mimeTypes.indexOf(i.file.mimeType) !== -1
         );
+
+        log(`fetching ${changes.length}`);
 
         return Promise.map(changes, this.processChange, { concurrency: 3 })
             .then(() =>

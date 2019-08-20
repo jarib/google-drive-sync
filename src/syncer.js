@@ -67,7 +67,7 @@ export default class Syncer {
 
     handleChanges = list => {
         const changes = list.changes.filter(
-            i => !i.removed && mimeTypes.indexOf(i.file.mimeType) !== -1
+            i => mimeTypes.indexOf(i.file.mimeType) !== -1
         );
 
         return Promise.map(changes, this.processChange, { concurrency: 3 })
@@ -99,7 +99,15 @@ export default class Syncer {
                 this.downloadFile(file).then(() =>
                     this.state.setFile(change.fileId, { change, file })
                 )
-            );
+            )
+            .catch(err => {
+                if (change.removed) {
+                    log('ignoring error for removed file', change);
+                } else {
+                    log(err);
+                    throw err;
+                }
+            });
     };
 
     downloadFile = file => {

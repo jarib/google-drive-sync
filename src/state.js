@@ -1,4 +1,3 @@
-import fs from 'fs-extra';
 import moment from 'moment';
 
 const maxItemsInState = 100;
@@ -9,7 +8,8 @@ const emptyState = () => ({
 });
 
 export default class State {
-    constructor(filePath) {
+    constructor(fs, filePath) {
+        this.fs = fs;
         this.filePath = filePath;
         this.data = emptyState();
     }
@@ -47,12 +47,14 @@ export default class State {
                 .forEach(id => delete docs[id]);
         }
 
-        return fs.outputJson(this.filePath, this.data).then(() => this);
+        return this.fs
+            .write(this.filePath, JSON.stringify(this.data))
+            .then(() => this);
     }
 
     read() {
-        return fs
-            .readFile(this.filePath, 'utf-8')
+        return this.fs
+            .read(this.filePath, 'utf-8')
             .then(JSON.parse)
             .catch(err => null)
             .then(data => (this.data = data || this.data))

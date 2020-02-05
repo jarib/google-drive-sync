@@ -15,12 +15,25 @@ $ npm install -g google-drive-sync
 
 ## Usage
 
+With local file system:
+
 ```
 $ google-drive-sync \
   --out-dir /usr/share/nginx/html/gdrive \
   --credentials ~/.google-credentials.json \
   --daemonize /var/log/gdrive-sync.log \
   --state /var/lib/misc/gdrive-sync.json
+```
+
+With S3:
+
+```
+$ google-drive-sync \
+  --out-dir /data \
+  --credentials ~/.google-credentials.json \
+  --daemonize /var/log/gdrive-sync.log \
+  --state gdrive-sync.json
+  --s3 https://access-key-id:secret-key@s3.amazonaws.com/google-drive-sync
 ```
 
 ## Plugins

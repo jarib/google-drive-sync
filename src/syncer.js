@@ -1,13 +1,13 @@
 import Promise from 'bluebird';
 import debug from 'debug';
 import EventEmitter from 'events';
-import fs from 'fs-extra';
 import moment from 'moment';
 import path from 'path';
 import streamBuffers from 'stream-buffers';
 import ArchieConverter from './archie-converter';
 import SpreadsheetConverter from './spreadsheet-converter';
 import State from './state';
+import url from 'url';
 
 const log = debug('google-drive-sync:syncer');
 
@@ -21,13 +21,15 @@ const IGNORED_ERRORS = [429];
 export default class Syncer {
     constructor(opts) {
         this.client = opts.client;
+        this.fs = opts.fs;
+
         this.outputDirectories = opts.outputDirectory.split(',');
 
         if (!opts.state) {
             throw new Error(`must specify "state" option`);
         }
 
-        this.state = new State(opts.state);
+        this.state = new State(this.fs, opts.state);
         this.events = new EventEmitter();
     }
 
@@ -260,8 +262,8 @@ export default class Syncer {
         return Promise.map(this.outputDirectories, dir => {
             const filePath = path.join(dir, fileName);
 
-            return fs
-                .writeFile(filePath, body)
+            return this.fs
+                .write(filePath, body)
                 .then(() => this.events.emit('saved', fileName, data));
         });
     }

@@ -176,7 +176,6 @@ export default class Syncer {
                     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
                 )
                 .then(stream => {
-                    log(stream);
                     const writable = new streamBuffers.WritableStreamBuffer();
 
                     stream

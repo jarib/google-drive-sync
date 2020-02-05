@@ -29,10 +29,10 @@ With S3:
 
 ```
 $ google-drive-sync \
-  --out-dir /data \
+  --out-dir data/ \
   --credentials ~/.google-credentials.json \
   --daemonize /var/log/gdrive-sync.log \
-  --state gdrive-sync.json
+  --state state.json
   --s3 https://access-key-id:secret-key@s3.amazonaws.com/google-drive-sync
 ```
 

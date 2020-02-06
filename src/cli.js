@@ -57,7 +57,7 @@ const isJson = str => {
         JSON.parse(str);
         return true;
     } catch (error) {
-        log(error);
+        console.log(error);
         return false;
     }
 };

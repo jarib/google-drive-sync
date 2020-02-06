@@ -53,12 +53,11 @@ const argv = yargs
     .help('help').argv;
 
 const isJson = str => {
-    console.log(str);
     try {
         JSON.parse(str);
         return true;
     } catch (error) {
-        console.log(error);
+        log(error);
         return false;
     }
 };

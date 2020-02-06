@@ -50,13 +50,6 @@ const argv = yargs
         describe: 'List of plugins to load.',
     })
     .demand(['out-dir', 'credentials'])
-    // .check(argv => {
-    //     if (!argv.outDir && !argv.s3) {
-    //         throw new Error('Must provide either --out-dir or --s3-url');
-    //     }
-
-    //     return true;
-    // })
     .help('help').argv;
 
 const isJson = str => {
@@ -64,9 +57,11 @@ const isJson = str => {
         JSON.parse(str);
         return true;
     } catch (error) {
+        log(error);
         return false;
     }
 };
+
 let credentials;
 
 if (fs.existsSync(argv.credentials)) {

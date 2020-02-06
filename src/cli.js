@@ -24,7 +24,8 @@ const argv = yargs
     })
     .option('credentials', {
         type: 'string',
-        describe: 'Path to Google API credentials (as JSON)',
+        describe:
+            'Path to Google API credentials (as JSON), or the actual credentials as JSON',
     })
     .option('s3', {
         type: 'string',
@@ -58,7 +59,23 @@ const argv = yargs
     // })
     .help('help').argv;
 
-const credentials = JSON.parse(fs.readFileSync(argv.credentials, 'utf-8'));
+const isJson = str => {
+    try {
+        JSON.parse(str);
+        return true;
+    } catch (error) {
+        return false;
+    }
+};
+let credentials;
+
+if (fs.existsSync(argv.credentials)) {
+    credentials = JSON.parse(fs.readFileSync(argv.credentials, 'utf-8'));
+} else if (isJson(argv.credentials)) {
+    credentials = JSON.parse(argv.credentials);
+} else {
+    throw new Error('invalid --credentials, must be JSON or path to JSON file');
+}
 
 const syncer = new Syncer({
     client: new GoogleDriveClient({ credentials }),

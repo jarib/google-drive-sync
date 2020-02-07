@@ -117,10 +117,13 @@ if (argv.interval) {
     }
 
     function sync() {
-        syncer.sync().then(() => setTimeout(sync, interval));
+        syncer
+            .sync()
+            .then(() => setTimeout(sync, interval))
+            .catch(console.error);
     }
 
     sync();
 } else {
-    syncer.sync();
+    syncer.sync().catch(console.error);
 }

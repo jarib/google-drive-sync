@@ -109,6 +109,11 @@ if (argv.plugins) {
     });
 }
 
+const fatalError = err => {
+    console.error(err);
+    process.exit(1);
+};
+
 if (argv.interval) {
     const interval = ms(argv.interval);
 
@@ -120,10 +125,10 @@ if (argv.interval) {
         syncer
             .sync()
             .then(() => setTimeout(sync, interval))
-            .catch(console.error);
+            .catch(fatalError);
     }
 
     sync();
 } else {
-    syncer.sync().catch(console.error);
+    syncer.sync().catch(fatalError);
 }

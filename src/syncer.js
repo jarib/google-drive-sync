@@ -175,6 +175,7 @@ export default class Syncer {
                     doc.id,
                     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
                 )
+                .catch(reject)
                 .then(stream => {
                     const writable = new streamBuffers.WritableStreamBuffer();
 

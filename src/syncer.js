@@ -281,7 +281,7 @@ export default class Syncer {
             const filePath = path.join(dir, fileName);
 
             return this.fs
-                .write(filePath, body, { mimeType })
+                .write(filePath, body, { mimeType: data.mimeType })
                 .then(() => this.events.emit('saved', fileName, data));
         });
     }

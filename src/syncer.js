@@ -115,18 +115,35 @@ export default class Syncer {
             case 'application/vnd.google-apps.spreadsheet':
             case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
                 promise = this.convertSpreadsheet(file).then(data => [
-                    { fileName: `${file.id}.json`, data },
+                    {
+                        fileName: `${file.id}.json`,
+                        data,
+                        mimeType: 'application/json',
+                    },
                 ]);
                 break;
             case 'application/vnd.google-apps.document':
                 promise = this.convertDocument(file).then(results => [
-                    { fileName: `${file.id}.json`, data: results.plain },
+                    {
+                        fileName: `${file.id}.json`,
+                        data: results.plain,
+                        mimeType: 'application/json',
+                    },
                     {
                         fileName: `${file.id}.styled.json`,
                         data: results.styled,
+                        mimeType: 'application/json',
                     },
-                    { fileName: `${file.id}.aml`, data: results.aml },
-                    { fileName: `${file.id}.html`, data: results.html },
+                    {
+                        fileName: `${file.id}.aml`,
+                        data: results.aml,
+                        mimeType: 'text/plain',
+                    },
+                    {
+                        fileName: `${file.id}.html`,
+                        data: results.html,
+                        mimeType: 'text/html',
+                    },
                 ]);
 
                 break;
@@ -138,11 +155,12 @@ export default class Syncer {
 
         return promise
             .then(results => {
-                return Promise.each(results, ({ fileName, data }) =>
+                return Promise.each(results, ({ fileName, data, mimeType }) =>
                     this.save(fileName, {
                         title: file.name,
                         modification,
                         data,
+                        mimeType,
                     })
                 );
             })
@@ -263,7 +281,7 @@ export default class Syncer {
             const filePath = path.join(dir, fileName);
 
             return this.fs
-                .write(filePath, body)
+                .write(filePath, body, { mimeType })
                 .then(() => this.events.emit('saved', fileName, data));
         });
     }

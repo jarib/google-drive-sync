@@ -30,13 +30,14 @@ export default class FileSystem {
         }
     }
 
-    write(filePath, data) {
+    write(filePath, data, { mimeType = null } = {}) {
         if (this.s3) {
             return this.s3
                 .upload({
                     Bucket: this.bucket,
                     Key: filePath,
                     Body: data,
+                    ContentType: mimeType,
                 })
                 .promise();
         } else {

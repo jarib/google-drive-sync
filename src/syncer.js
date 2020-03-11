@@ -277,12 +277,16 @@ export default class Syncer {
 
         const body = fileName.endsWith('.json') ? JSON.stringify(data) : data.data;
 
-        return Promise.map(this.outputDirectories, dir => {
-            const filePath = path.join(dir, fileName);
+        return Promise.map(
+            this.outputDirectories,
+            dir => {
+                const filePath = path.join(dir, fileName);
 
-            return this.fs
-                .write(filePath, body, { mimeType: data.mimeType })
-                .then(() => this.events.emit('saved', fileName, data));
-        });
+                return this.fs
+                    .write(filePath, body, { mimeType: data.mimeType })
+                    .then(() => this.events.emit('saved', fileName, data));
+            },
+            { concurrency: 1 }
+        );
     }
 }

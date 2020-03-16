@@ -197,6 +197,10 @@ export default class Syncer {
                 .then(stream => {
                     const writable = new streamBuffers.WritableStreamBuffer();
 
+                    if (!stream) {
+                        return reject(new Error('no stream'));
+                    }
+
                     stream
                         .on('end', () => {
                             log('end stream');

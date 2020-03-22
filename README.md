@@ -33,7 +33,7 @@ $ google-drive-sync \
   --credentials ~/.google-credentials.json \
   --daemonize /var/log/gdrive-sync.log \
   --state state.json
-  --s3 https://access-key-id:secret-key@s3.amazonaws.com/google-drive-sync
+  --s3 https://access-key-id:secret-key@s3.amazonaws.com/google-drive-sync?log=true&http.timeout=20000
 ```
 
 ## Plugins

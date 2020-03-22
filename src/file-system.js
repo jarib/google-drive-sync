@@ -1,6 +1,9 @@
 import AWS from 'aws-sdk';
 import url from 'url';
 import fs from 'fs-extra';
+import debug from 'debug';
+
+const log = debug('google-drive-sync:file-system');
 
 export default class FileSystem {
     constructor(opts) {
@@ -10,13 +13,29 @@ export default class FileSystem {
 
             this.bucket = s3.pathname.replace(/^\//, '');
 
-            this.s3 = new AWS.S3({
+            if (s3.query.log && s3.query.log !== 'false') {
+                AWS.config.logger = { log };
+            }
+
+            const s3Opts = {
                 endpoint: `${s3.protocol}//${s3.hostname}`,
                 bucket: this.bucket,
-                accessKeyId,
-                secretAccessKey,
-                log: s3.query.log,
-            });
+                httpOptions: {
+                    proxy: s3.query['http.proxy'],
+                    connectTimeout: s3.query['http.connectTimeout']
+                        ? +s3.query['http.connectTimeout']
+                        : undefined,
+                    timeout: s3.query['http.timeout']
+                        ? +s3.query['http.timeout']
+                        : undefined,
+                },
+                apiVersion: s3.query.apiVersion,
+                signatureVersion: s3.query.signatureVersion,
+            };
+
+            log(s3Opts);
+
+            this.s3 = new AWS.S3({ ...s3Opts, accessKeyId, secretAccessKey });
         }
     }
 

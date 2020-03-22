@@ -1,6 +1,6 @@
 {
   "name": "google-drive-sync",
-  "version": "4.0.4",
+  "version": "4.1.0",
   "description": "Share your Google Drive files with this daemon to have them saved to disk as JSON.",
   "bin": {
     "google-drive-sync": "lib/cli.js",

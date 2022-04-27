@@ -90,7 +90,9 @@ export default class Syncer {
 
     fetchSpecialFiles = () => {
         const ids = process.env.GDRIVE_ALWAYS_FETCH
-            ? process.env.GDRIVE_ALWAYS_FETCH.split(',')
+            ? process.env.GDRIVE_ALWAYS_FETCH.split(',').filter(
+                  (e) => e.trim().length
+              )
             : [];
 
         return Promise.map(

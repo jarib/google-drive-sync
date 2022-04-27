@@ -52,7 +52,7 @@ const argv = yargs
     .demand(['out-dir', 'credentials'])
     .help('help').argv;
 
-const isJson = str => {
+const isJson = (str) => {
     try {
         JSON.parse(str);
         return true;
@@ -79,7 +79,7 @@ const syncer = new Syncer({
     state: argv.state,
 });
 
-syncer.on('error', err => {
+syncer.on('error', (err) => {
     console.error(`${moment().format()}: ${err}\n${err.stack}`);
 
     if (err.httpResponse) {
@@ -103,13 +103,13 @@ if (argv.daemonize) {
 if (argv.plugins) {
     const cwd = process.cwd();
 
-    argv.plugins.forEach(pluginPath => {
+    argv.plugins.forEach((pluginPath) => {
         const p = require(path.resolve(cwd, pluginPath));
         p(syncer);
     });
 }
 
-const fatalError = err => {
+const fatalError = (err) => {
     console.error(err);
     process.exit(1);
 };

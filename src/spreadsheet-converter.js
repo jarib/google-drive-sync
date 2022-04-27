@@ -8,7 +8,7 @@ export default class SpreadsheetConverter {
         const result = {};
         const workbook = XLSX.read(xlsxBinaryString, { type: 'binary' });
 
-        workbook.SheetNames.forEach(sn => {
+        workbook.SheetNames.forEach((sn) => {
             result[sn] = this._parseSheet(workbook.Sheets[sn]);
         });
 
@@ -26,31 +26,21 @@ export default class SpreadsheetConverter {
             for (let rowIndex = range.s.r; rowIndex <= range.e.r; ++rowIndex) {
                 const rowName = XLSX.utils.encode_row(rowIndex);
 
-                for (
-                    let colIndex = range.s.c;
-                    colIndex <= range.e.c;
-                    ++colIndex
-                ) {
+                for (let colIndex = range.s.c; colIndex <= range.e.c; ++colIndex) {
                     const colName = XLSX.utils.encode_col(colIndex);
 
                     const val = sheet[colName + rowName];
 
-                    let formattedValue = val
-                        ? XLSX.utils.format_cell(val)
-                        : null;
+                    let formattedValue = val ? XLSX.utils.format_cell(val) : null;
 
-                    if (
-                        formattedValue &&
-                        !formattedValue.toString().trim().length
-                    ) {
+                    if (formattedValue && !formattedValue.toString().trim().length) {
                         formattedValue = null;
                     }
 
                     if (rowIndex === 0) {
                         cols.push(formattedValue);
                     } else {
-                        const row = (rows[rowIndex - 1] =
-                            rows[rowIndex - 1] || []);
+                        const row = (rows[rowIndex - 1] = rows[rowIndex - 1] || []);
                         row.push(formattedValue);
                     }
                 }
@@ -58,8 +48,8 @@ export default class SpreadsheetConverter {
 
             const rowObjects = [];
 
-            rows.forEach(row => {
-                if (row.every(d => !d)) {
+            rows.forEach((row) => {
+                if (row.every((d) => !d)) {
                     return;
                 }
 

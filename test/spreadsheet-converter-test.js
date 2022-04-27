@@ -10,7 +10,7 @@ const xlsx = fs.readFileSync(
 describe('SpreadsheetConverter', () => {
     describe('.convert', () => {
         it('should convert a xlsx spreadsheet', () => {
-            return SpreadsheetConverter.convert(xlsx).then(result => {
+            return SpreadsheetConverter.convert(xlsx).then((result) => {
                 assert.deepEqual(Object.keys(result), ['Sheet1']);
                 assert.equal(result.Sheet1.length, 3);
 

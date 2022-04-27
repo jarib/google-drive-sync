@@ -20,7 +20,7 @@ export default class GoogleDriveClient {
                 credentials: this.credentials,
                 scopes: ['https://www.googleapis.com/auth/drive'],
             })
-            .then(client => {
+            .then((client) => {
                 this.drive = google.drive({
                     version: 'v3',
                     auth: client,
@@ -69,7 +69,7 @@ export default class GoogleDriveClient {
                     responseType: 'stream',
                 }
             )
-            .then(res => res.data);
+            .then((res) => res.data);
     }
 
     getUrl(uri) {

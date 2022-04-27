@@ -12,7 +12,7 @@ describe('ArchieConverter', () => {
     describe('.convert', () => {
         it('should convert a document and preserve styles', () => {
             return ArchieConverter.convert(html, {
-                preserve_styles: ['bold', 'italic', 'underline']
+                preserve_styles: ['bold', 'italic', 'underline'],
             }).then(({ result }) => {
                 assert.equal(result.foo, 'normal key');
                 assert.equal(
@@ -50,10 +50,7 @@ describe('ArchieConverter', () => {
                     result.body[2].value,
                     'line 3 entire line bold ignored'
                 );
-                assert.equal(
-                    result.body[3].value,
-                    'line 4 with partial underline'
-                );
+                assert.equal(result.body[3].value, 'line 4 with partial underline');
             });
         });
     });

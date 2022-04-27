@@ -5,5 +5,5 @@ import GoogleDriveClient from './google-drive-client';
 module.exports = {
     ArchieConverter,
     SpreadsheetConverter,
-    GoogleDriveClient
+    GoogleDriveClient,
 };

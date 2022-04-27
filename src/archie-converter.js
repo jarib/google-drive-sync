@@ -10,7 +10,7 @@ const log = debug('google-drive-sync:archie-converter');
 
 export default class ArchieConverter {
     static convert(html, options = {}) {
-        return this.parseHtml(html, options).then(aml => {
+        return this.parseHtml(html, options).then((aml) => {
             try {
                 return {
                     result: archieml.load(aml),
@@ -36,10 +36,10 @@ export default class ArchieConverter {
                     reject(error);
                 }
 
-                var html = _.find(dom, t => t.name === 'html');
-                var head = _.find(html.children, t => t.name === 'head');
-                var body = _.find(html.children, t => t.name === 'body');
-                var style = _.find(head.children, t => t.name === 'style');
+                var html = _.find(dom, (t) => t.name === 'html');
+                var head = _.find(html.children, (t) => t.name === 'head');
+                var body = _.find(html.children, (t) => t.name === 'body');
+                var style = _.find(head.children, (t) => t.name === 'style');
                 var styleData = style ? style.children[0].data : '';
 
                 var style_config = {};
@@ -65,11 +65,11 @@ export default class ArchieConverter {
                 }
 
                 var tagHandlers = {
-                    _base: function(tag) {
+                    _base: function (tag) {
                         var components = [],
                             func;
 
-                        _.each(tag.children, function(child) {
+                        _.each(tag.children, function (child) {
                             if ((func = tagHandlers[child.name || child.type])) {
                                 var component = {
                                     value: func(child),
@@ -105,12 +105,14 @@ export default class ArchieConverter {
                                             // partial line, use strong/em
                                             component.classes = _.unique(
                                                 _.flatten(
-                                                    _.map(tag_styles, function(
-                                                        style
-                                                    ) {
-                                                        return style_config[style]
-                                                            .className;
-                                                    })
+                                                    _.map(
+                                                        tag_styles,
+                                                        function (style) {
+                                                            return style_config[
+                                                                style
+                                                            ].className;
+                                                        }
+                                                    )
                                                 )
                                             );
 
@@ -128,12 +130,14 @@ export default class ArchieConverter {
                                             // entire value, use class
                                             component.tags = _.unique(
                                                 _.flatten(
-                                                    _.map(tag_styles, function(
-                                                        style
-                                                    ) {
-                                                        return style_config[style]
-                                                            .tag;
-                                                    })
+                                                    _.map(
+                                                        tag_styles,
+                                                        function (style) {
+                                                            return style_config[
+                                                                style
+                                                            ].tag;
+                                                        }
+                                                    )
                                                 )
                                             );
 
@@ -169,22 +173,22 @@ export default class ArchieConverter {
 
                         return components;
                     },
-                    text: function(textTag) {
+                    text: function (textTag) {
                         return [
                             {
                                 value: textTag.data,
                             },
                         ];
                     },
-                    span: function(spanTag) {
+                    span: function (spanTag) {
                         return tagHandlers._base(spanTag);
                     },
-                    p: function(pTag) {
+                    p: function (pTag) {
                         var vals = tagHandlers._base(pTag);
                         _.last(vals).newline = true;
                         return vals;
                     },
-                    a: function(aTag) {
+                    a: function (aTag) {
                         var url = aTag.attribs.href;
                         if (url === undefined) {
                             return {
@@ -218,7 +222,7 @@ export default class ArchieConverter {
                         });
                         return vals;
                     },
-                    li: function(tag) {
+                    li: function (tag) {
                         var vals = tagHandlers._base(tag);
                         _.last(vals).newline = true;
                         var firstString = _.first(vals);
@@ -231,7 +235,7 @@ export default class ArchieConverter {
                         firstString.value = '* ' + firstString.value;
                         return vals;
                     },
-                    img: function(imgTag) {
+                    img: function (imgTag) {
                         return [
                             {
                                 value: imgTag.attribs.src,
@@ -240,15 +244,15 @@ export default class ArchieConverter {
                     },
                 };
 
-                ['ul', 'ol'].forEach(function(tag) {
+                ['ul', 'ol'].forEach(function (tag) {
                     tagHandlers[tag] = tagHandlers.span;
                 });
-                ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].forEach(function(tag) {
+                ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].forEach(function (tag) {
                     tagHandlers[tag] = tagHandlers.p;
                 });
 
                 function flattenComponents(components) {
-                    components = _.map(components, function(component, index) {
+                    components = _.map(components, function (component, index) {
                         if (typeof component.value === 'string') {
                             // nothing
                         } else if (
@@ -279,7 +283,7 @@ export default class ArchieConverter {
                         }
                         return component;
                     });
-                    components = _.reject(components, function(component) {
+                    components = _.reject(components, function (component) {
                         if (!component) return true;
                         return (
                             (_.isArray(component.value) &&
@@ -296,7 +300,7 @@ export default class ArchieConverter {
                 function mergeComponents(components) {
                     components = _.reduce(
                         components,
-                        function(memo, component) {
+                        function (memo, component) {
                             var last = _.last(memo);
 
                             // Merging
@@ -373,7 +377,7 @@ export default class ArchieConverter {
 
                 function printComponents(components) {
                     var str = '';
-                    components.forEach(function(component) {
+                    components.forEach(function (component) {
                         var componentStr = '';
 
                         if (typeof component.value === 'string') {
@@ -387,7 +391,7 @@ export default class ArchieConverter {
                             component.classes.length > 0
                         )
                             component.tags.push('span');
-                        component.tags.forEach(function(tag, index) {
+                        component.tags.forEach(function (tag, index) {
                             var classes = '';
                             if (index === 0 && tag === 'span')
                                 classes =
@@ -432,7 +436,7 @@ export default class ArchieConverter {
                 );
 
                 // Remove smart quotes from inside tags
-                parsedText = parsedText.replace(/<[^<>]*>/g, function(match) {
+                parsedText = parsedText.replace(/<[^<>]*>/g, function (match) {
                     return match.replace(/”|“/g, '"').replace(/‘|’/g, "'");
                 });
 

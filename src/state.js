@@ -37,14 +37,14 @@ export default class State {
         const ids = Object.keys(docs);
 
         if (ids.length > maxItemsInState) {
-            ids.filter(id => docs[id].file && docs[id].file.modifiedDate)
+            ids.filter((id) => docs[id].file && docs[id].file.modifiedDate)
                 .sort(
                     (a, b) =>
                         moment(docs[b].file.modifiedDate).valueOf() -
                         moment(docs[a].file.modifiedDate).valueOf()
                 )
                 .slice(maxItemsInState)
-                .forEach(id => delete docs[id]);
+                .forEach((id) => delete docs[id]);
         }
 
         return this.fs
@@ -56,8 +56,8 @@ export default class State {
         return this.fs
             .read(this.filePath, 'utf-8')
             .then(JSON.parse)
-            .catch(err => null)
-            .then(data => (this.data = data || this.data))
+            .catch((err) => null)
+            .then((data) => (this.data = data || this.data))
             .then(() => this.data);
     }
 }

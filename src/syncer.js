@@ -50,7 +50,7 @@ export default class Syncer {
             .getChanges(this.state.getPageToken())
             .then(this.handleChanges)
             .then(this.fetchSpecialFiles)
-            .catch(err => this.events.emit('error', err));
+            .catch((err) => this.events.emit('error', err));
     };
 
     ensurePageTokenInState() {
@@ -59,7 +59,9 @@ export default class Syncer {
         } else {
             return this.client
                 .getStartPageToken()
-                .then(res => this.state.save({ pageToken: res.startPageToken - 1 }));
+                .then((res) =>
+                    this.state.save({ pageToken: res.startPageToken - 1 })
+                );
         }
     }
 
@@ -67,11 +69,11 @@ export default class Syncer {
         this.events.on(...args);
     }
 
-    handleChanges = list => {
+    handleChanges = (list) => {
         log('found changes', list.changes);
 
         const changes = list.changes.filter(
-            i => !i.removed && mimeTypes.indexOf(i.file.mimeType) !== -1
+            (i) => !i.removed && mimeTypes.indexOf(i.file.mimeType) !== -1
         );
 
         log(`fetching ${changes.length}`);
@@ -83,7 +85,7 @@ export default class Syncer {
                     lastCheck: moment().format(),
                 })
             )
-            .then(state => this.events.emit('synced', state.data));
+            .then((state) => this.events.emit('synced', state.data));
     };
 
     fetchSpecialFiles = () => {
@@ -93,28 +95,28 @@ export default class Syncer {
 
         return Promise.map(
             ids,
-            id => this.client.getFile(id).then(this.downloadFile),
+            (id) => this.client.getFile(id).then(this.downloadFile),
             { concurrency: 1 }
         );
     };
 
-    processChange = change => {
+    processChange = (change) => {
         return this.client
             .getFile(change.fileId)
-            .then(file =>
+            .then((file) =>
                 this.downloadFile(file).then(() =>
                     this.state.setFile(change.fileId, { change, file })
                 )
             );
     };
 
-    downloadFile = file => {
+    downloadFile = (file) => {
         let promise = null;
 
         switch (file.mimeType) {
             case 'application/vnd.google-apps.spreadsheet':
             case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-                promise = this.convertSpreadsheet(file).then(data => [
+                promise = this.convertSpreadsheet(file).then((data) => [
                     {
                         fileName: `${file.id}.json`,
                         data,
@@ -123,7 +125,7 @@ export default class Syncer {
                 ]);
                 break;
             case 'application/vnd.google-apps.document':
-                promise = this.convertDocument(file).then(results => [
+                promise = this.convertDocument(file).then((results) => [
                     {
                         fileName: `${file.id}.json`,
                         data: results.plain,
@@ -154,7 +156,7 @@ export default class Syncer {
         const modification = this.getModification(file);
 
         return promise
-            .then(results => {
+            .then((results) => {
                 return Promise.each(results, ({ fileName, data, mimeType }) =>
                     this.save(fileName, {
                         title: file.name,
@@ -164,7 +166,7 @@ export default class Syncer {
                     })
                 );
             })
-            .catch(err => {
+            .catch((err) => {
                 console.error(file.webViewLink, err.message);
                 this.events.emit('error', err);
 
@@ -194,7 +196,7 @@ export default class Syncer {
                     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
                 )
                 .catch(reject)
-                .then(stream => {
+                .then((stream) => {
                     const writable = new streamBuffers.WritableStreamBuffer();
 
                     if (!stream) {
@@ -211,13 +213,13 @@ export default class Syncer {
                         .on('error', reject)
                         .pipe(writable);
                 });
-        }).then(buf => SpreadsheetConverter.convert(buf.toString('binary')));
+        }).then((buf) => SpreadsheetConverter.convert(buf.toString('binary')));
     }
 
     convertDocument(doc) {
         return this.client
             .exportFile(doc.id, 'text/html')
-            .then(html =>
+            .then((html) =>
                 Promise.props({
                     html,
                     plain: ArchieConverter.convert(html),
@@ -283,7 +285,7 @@ export default class Syncer {
 
         return Promise.map(
             this.outputDirectories,
-            dir => {
+            (dir) => {
                 const filePath = path.join(dir, fileName);
 
                 return this.fs

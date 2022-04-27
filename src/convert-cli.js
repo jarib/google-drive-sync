@@ -11,7 +11,7 @@ const argv = yargs
         alias: 't',
         describe: 'The type of the given document',
         choices: ['xlsx', 'html', 'archieml'],
-        required: true
+        required: true,
     })
     .demand(1)
     .help('help').argv;
@@ -22,22 +22,19 @@ const inputPath = file === '-' ? '/dev/stdin' : file;
 
 switch (argv.type) {
     case 'xlsx':
-        fs
-            .readFile(inputPath, 'binary')
-            .then(data => SpreadsheetConverter.convert(data))
-            .then(r => printJson(r));
+        fs.readFile(inputPath, 'binary')
+            .then((data) => SpreadsheetConverter.convert(data))
+            .then((r) => printJson(r));
         break;
     case 'html':
-        fs
-            .readFile(inputPath, 'utf-8')
-            .then(data => ArchieConverter.convert(data))
-            .then(r => printJson(r.result));
+        fs.readFile(inputPath, 'utf-8')
+            .then((data) => ArchieConverter.convert(data))
+            .then((r) => printJson(r.result));
         break;
     case 'archieml':
-        fs
-            .readFile(inputPath, 'utf-8')
-            .then(data => ArchieConverter.convertText(data))
-            .then(r => printJson(r.result));
+        fs.readFile(inputPath, 'utf-8')
+            .then((data) => ArchieConverter.convertText(data))
+            .then((r) => printJson(r.result));
         break;
     default:
         throw new Error('unknown type: ' + JSON.stringify(argv.type));

@@ -1,6 +1,6 @@
 {
   "name": "google-drive-sync",
-  "version": "4.1.1",
+  "version": "4.2.0",
   "description": "Share your Google Drive files with this daemon to have them saved to disk as JSON.",
   "bin": {
     "google-drive-sync": "lib/cli.js",
@@ -39,13 +39,14 @@
     "xlsx"
   ],
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.478.0",
     "archieml": "^0.4.2",
-    "aws-sdk": "^2.643.0",
     "bluebird": "^3.7.2",
     "daemon": "^1.1.0",
     "debug": "^4.1.1",
     "fs-extra": "^4.0.3",
-    "googleapis": "^100.0.0",
+    "google-auth-library": "^9.4.1",
+    "googleapis": "^129.0.0",
     "html-entities": "^1.2.0",
     "htmlparser2": "^3.10.1",
     "lodash.zip": "^4.0.0",

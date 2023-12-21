@@ -1,4 +1,4 @@
-import AWS from 'aws-sdk';
+import { S3 } from '@aws-sdk/client-s3';
 import url from 'url';
 import fs from 'fs-extra';
 import debug from 'debug';
@@ -12,10 +12,6 @@ export default class FileSystem {
             const [accessKeyId, secretAccessKey] = s3.auth.split(':', 2);
 
             this.bucket = s3.pathname.replace(/^\//, '');
-
-            if (s3.query.log && s3.query.log !== 'false') {
-                AWS.config.logger = { log };
-            }
 
             const s3Opts = {
                 endpoint: `${s3.protocol}//${s3.hostname}`,
@@ -35,7 +31,19 @@ export default class FileSystem {
 
             log(s3Opts);
 
-            this.s3 = new AWS.S3({ ...s3Opts, accessKeyId, secretAccessKey });
+            const logger =
+                s3.query.log && s3.query.log !== 'false' ? { log } : undefined;
+
+            this.s3 = new S3({
+                ...s3Opts,
+
+                credentials: {
+                    accessKeyId,
+                    secretAccessKey,
+                },
+
+                logger,
+            });
         }
     }
 

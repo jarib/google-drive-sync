@@ -173,8 +173,7 @@ export default class Syncer {
                 this.events.emit('error', err);
 
                 let isIgnored =
-                    err.httpResponse &&
-                    IGNORED_ERRORS.includes(err.httpResponse.statusCode);
+                    err.response && IGNORED_ERRORS.includes(err.response.status);
                 isIgnored = isIgnored || !!err.isArchieMLError;
 
                 const preThrow = err.aml

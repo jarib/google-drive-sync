@@ -10,6 +10,7 @@ import daemon from 'daemon';
 import debug from 'debug';
 import moment from 'moment';
 import path from 'path';
+import util from 'util';
 
 const log = debug('google-drive-sync:cli');
 const httpLog = debug('google-drive-sync:http');
@@ -82,11 +83,11 @@ const syncer = new Syncer({
 syncer.on('error', (err) => {
     console.error(`${moment().format()}: ${err}\n${err.stack}`);
 
-    if (err.httpResponse) {
-        httpLog(err.httpResponse.statusCode, err.httpResponse.statusMessage);
-        httpLog(err.httpResponse.request.href);
-        httpLog(err.httpResponse.headers);
-        httpLog(err.httpResponse.body);
+    if (err.response) {
+        httpLog(err.response.status, err.response.statusText);
+        httpLog(err.response.request.responseURL);
+        httpLog(err.response.headers);
+        httpLog(err.response.body);
     }
 });
 

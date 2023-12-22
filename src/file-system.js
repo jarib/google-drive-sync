@@ -1,4 +1,4 @@
-import { S3 } from '@aws-sdk/client-s3';
+import { GetObjectCommand, PutObjectCommand, S3 } from '@aws-sdk/client-s3';
 import url from 'url';
 import fs from 'fs-extra';
 import debug from 'debug';
@@ -16,6 +16,7 @@ export default class FileSystem {
             const s3Opts = {
                 endpoint: `${s3.protocol}//${s3.hostname}`,
                 bucket: this.bucket,
+                region: s3.hostname.match(/s3\.(.+?)\.amazonaws/)?.[1],
                 httpOptions: {
                     proxy: s3.query['http.proxy'],
                     connectTimeout: s3.query['http.connectTimeout']
@@ -47,11 +48,13 @@ export default class FileSystem {
         }
     }
 
-    read(filePath, encoding = 'utf8') {
+    async read(filePath, encoding = 'utf8') {
         if (this.s3) {
-            return this.s3
-                .getObject({ Bucket: this.bucket, Key: filePath })
-                .promise();
+            const res = await this.s3.send(
+                new GetObjectCommand({ Bucket: this.bucket, Key: filePath })
+            );
+
+            return res.Body.transformToString();
         } else {
             return fs.readFile(filePath, encoding);
         }
@@ -59,8 +62,8 @@ export default class FileSystem {
 
     write(filePath, data, { mimeType = null } = {}) {
         if (this.s3) {
-            return this.s3
-                .upload(
+            return this.s3.send(
+                new PutObjectCommand(
                     {
                         Bucket: this.bucket,
                         Key: filePath,
@@ -69,7 +72,7 @@ export default class FileSystem {
                     },
                     { queueSize: 1 }
                 )
-                .promise();
+            );
         } else {
             return fs.outputFile(filePath, data);
         }

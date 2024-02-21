@@ -16,12 +16,11 @@ const mimeTypes = [
     'application/vnd.google-apps.document',
 ];
 
-const IGNORED_ERRORS = [429];
-
 export default class Syncer {
     constructor(opts) {
         this.client = opts.client;
         this.fs = opts.fs;
+        this.ignoredErrors = (opts.ignoredErrors || []).map((e) => +e);
 
         this.outputDirectories = opts.outputDirectory.split(',');
 
@@ -173,7 +172,7 @@ export default class Syncer {
                 this.events.emit('error', err);
 
                 let isIgnored =
-                    err.response && IGNORED_ERRORS.includes(err.response.status);
+                    err.response && this.ignoredErrors.includes(err.response.status);
                 isIgnored = isIgnored || !!err.isArchieMLError;
 
                 const preThrow = err.aml

@@ -50,6 +50,11 @@ const argv = yargs
         type: 'array',
         describe: 'List of plugins to load.',
     })
+    .option('ignored-errors', {
+        type: 'array',
+        describe: 'List of error codes from Google to ignore.',
+        default: [429],
+    })
     .demand(['out-dir', 'credentials'])
     .help('help').argv;
 
@@ -78,6 +83,7 @@ const syncer = new Syncer({
     fs: new FileSystem({ s3: argv.s3 }),
     outputDirectory: argv.outDir,
     state: argv.state,
+    ignoredErrors: argv.ignoredErrors,
 });
 
 syncer.on('error', (err) => {

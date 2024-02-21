@@ -36,6 +36,14 @@ $ google-drive-sync \
   --s3 https://access-key-id:secret-key@s3.amazonaws.com/google-drive-sync?log=true&http.timeout=20000
 ```
 
+## Ignoring errors from Google Drive
+
+Sometimes Google Drive returns errors that are not fatal, e.g. 429 (rate limit) and 403 (forbidden). You can ignore these errors by passing the `--ignore-errors` option. By default, only 429 errors are ignored
+
+```
+$ google-drive-sync --ignore-errors 429 --ignore-errors 403
+```
+
 ## Plugins
 
 Can e.g. be used to purge HTTP caches.

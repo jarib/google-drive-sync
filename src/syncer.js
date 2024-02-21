@@ -20,7 +20,7 @@ export default class Syncer {
     constructor(opts) {
         this.client = opts.client;
         this.fs = opts.fs;
-        this.ignoredErrors = (opts.ignoredErrors || []).map((e) => +e);
+        this.ignoreErrors = (opts.ignoreErrors || [429]).map((e) => +e);
 
         this.outputDirectories = opts.outputDirectory.split(',');
 
@@ -30,6 +30,8 @@ export default class Syncer {
 
         this.state = new State(this.fs, opts.state);
         this.events = new EventEmitter();
+
+        log('ignoring errors', this.ignoreErrors);
     }
 
     sync() {
@@ -49,6 +51,7 @@ export default class Syncer {
             .getChanges(this.state.getPageToken())
             .then(this.handleChanges)
             .then(this.fetchSpecialFiles)
+            .then(() => log('fetch completed successfully'))
             .catch((err) => this.events.emit('error', err));
     };
 
@@ -172,7 +175,7 @@ export default class Syncer {
                 this.events.emit('error', err);
 
                 let isIgnored =
-                    err.response && this.ignoredErrors.includes(err.response.status);
+                    err.response && this.ignoreErrors.includes(err.response.status);
                 isIgnored = isIgnored || !!err.isArchieMLError;
 
                 const preThrow = err.aml

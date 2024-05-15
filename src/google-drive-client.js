@@ -94,13 +94,15 @@ export default class GoogleDriveClient {
         });
     }
 
-    getChanges(pageToken) {
-        log(`fetching changes for page token = ${pageToken}`);
+    getChanges(pageToken, pageSize = 100) {
+        log(
+            `fetching changes for page token = ${pageToken}, pageSize = ${pageSize}`
+        );
 
         return new Promise((resolve, reject) => {
             this._assertAuthorized();
 
-            this.drive.changes.list({ pageToken }, (err, changes) => {
+            this.drive.changes.list({ pageToken, pageSize }, (err, changes) => {
                 err ? reject(err) : resolve(changes.data);
             });
         });

@@ -7,7 +7,6 @@ import streamBuffers from 'stream-buffers';
 import ArchieConverter from './archie-converter';
 import SpreadsheetConverter from './spreadsheet-converter';
 import State from './state';
-import url from 'url';
 
 const log = debug('google-drive-sync:syncer');
 
@@ -21,8 +20,8 @@ export default class Syncer {
         this.client = opts.client;
         this.fs = opts.fs;
         this.ignoreErrors = (opts.ignoreErrors || [429]).map((e) => +e);
-
         this.outputDirectories = opts.outputDirectory.split(',');
+        this.pageSize = +opts.pageSize || 100;
 
         if (!opts.state) {
             throw new Error(`must specify "state" option`);
@@ -48,7 +47,7 @@ export default class Syncer {
 
     fetchChanges = () => {
         return this.client
-            .getChanges(this.state.getPageToken())
+            .getChanges(this.state.getPageToken(), this.pageSize)
             .then(this.handleChanges)
             .then(this.fetchSpecialFiles)
             .then(() => log('fetch completed successfully'))

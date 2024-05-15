@@ -42,6 +42,11 @@ const argv = yargs
         describe:
             'Polling interval (e.g. "15s"). If not set, run one check then exit (e.g. for cron).',
     })
+    .option('page-size', {
+        type: 'number',
+        describe: 'How many items to fetch per page. Default is 100.',
+        default: 100,
+    })
     .option('state', {
         type: 'string',
         describe: 'Path to a file where we should save state.',
@@ -84,6 +89,7 @@ const syncer = new Syncer({
     outputDirectory: argv.outDir,
     state: argv.state,
     ignoreErrors: argv.ignoreErrors,
+    pageSize: argv.pageSize,
 });
 
 syncer.on('error', (err) => {

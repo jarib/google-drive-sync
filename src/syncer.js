@@ -140,6 +140,11 @@ export default class Syncer {
                         mimeType: 'application/json',
                     },
                     {
+                        fileName: `${file.id}.v5.json`,
+                        data: results.plainV5,
+                        mimeType: 'application/json',
+                    },
+                    {
                         fileName: `${file.id}.aml`,
                         data: results.aml,
                         mimeType: 'text/plain',
@@ -228,11 +233,15 @@ export default class Syncer {
                     styled: ArchieConverter.convert(html, {
                         preserve_styles: ['bold', 'italic', 'underline'],
                     }),
+                    plainV5: ArchieConverter.convert(html, {
+                        useNewVersion: true,
+                    }),
                 })
             )
-            .then(({ plain, styled, html }) => ({
+            .then(({ plain, styled, plainV5, html }) => ({
                 plain: plain.result,
                 styled: styled.result,
+                plainV5: plainV5.result,
                 aml: plain.aml,
                 html,
             }));

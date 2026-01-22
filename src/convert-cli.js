@@ -13,12 +13,19 @@ const argv = yargs
         choices: ['xlsx', 'html', 'archieml'],
         required: true,
     })
+    .option('archieml-version', {
+        alias: 'v',
+        describe: 'ArchieML version to use (only for html/archieml types)',
+        choices: ['0.4', '0.5'],
+        default: '0.4',
+    })
     .demand(1)
     .help('help').argv;
 
 const [file] = argv._;
 
 const inputPath = file === '-' ? '/dev/stdin' : file;
+const useNewVersion = argv.archiemlVersion === '0.5';
 
 switch (argv.type) {
     case 'xlsx':
@@ -28,12 +35,12 @@ switch (argv.type) {
         break;
     case 'html':
         fs.readFile(inputPath, 'utf-8')
-            .then((data) => ArchieConverter.convert(data))
+            .then((data) => ArchieConverter.convert(data, { useNewVersion }))
             .then((r) => printJson(r.result));
         break;
     case 'archieml':
         fs.readFile(inputPath, 'utf-8')
-            .then((data) => ArchieConverter.convertText(data))
+            .then((data) => ArchieConverter.convertText(data, { useNewVersion }))
             .then((r) => printJson(r.result));
         break;
     default:

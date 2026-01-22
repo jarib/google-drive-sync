@@ -1,4 +1,5 @@
 import archieml from 'archieml';
+import archiemlNew from 'archieml-new';
 import htmlparser from 'htmlparser2';
 import urlm from 'url';
 import _ from 'underscore';
@@ -12,8 +13,15 @@ export default class ArchieConverter {
     static convert(html, options = {}) {
         return this.parseHtml(html, options).then((aml) => {
             try {
+                // Fix missing newlines before ArchieML directives for version 0.5.0
+                // This ensures directives like [array] and :skip are on their own lines
+                if (options.useNewVersion) {
+                    aml = aml.replace(/([^\n])(\[[\w\.\+\-]+\]|:\w+)/g, '$1\n$2');
+                }
+                
+                const archiemlLib = options.useNewVersion ? archiemlNew : archieml;
                 return {
-                    result: archieml.load(aml),
+                    result: archiemlLib.load(aml),
                     aml: aml,
                 };
             } catch (err) {
@@ -25,8 +33,9 @@ export default class ArchieConverter {
         });
     }
 
-    static convertText(aml) {
-        return Promise.resolve({ result: archieml.load(aml) });
+    static convertText(aml, options = {}) {
+        const archiemlLib = options.useNewVersion ? archiemlNew : archieml;
+        return Promise.resolve({ result: archiemlLib.load(aml) });
     }
 
     static parseHtml(str, options = {}) {

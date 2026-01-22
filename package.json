@@ -41,6 +41,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.478.0",
     "archieml": "^0.4.2",
+    "archieml-new": "npm:archieml@^0.5.0",
     "bluebird": "^3.7.2",
     "daemon": "^1.1.0",
     "debug": "^4.1.1",

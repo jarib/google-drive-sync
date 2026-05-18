@@ -16,9 +16,12 @@ export default class ArchieConverter {
                 // Fix missing newlines before ArchieML directives for version 0.5.0
                 // This ensures directives like [array] and :skip are on their own lines
                 if (options.useNewVersion) {
-                    aml = aml.replace(/([^\n])(\[[\w\.\+\-]+\]|:\w+)/g, '$1\n$2');
+                    aml = aml.replace(
+                        /([^\n])(\[[\w\.\+\-]+\]|:(?:skip|endskip|end|ignore|endignore)\b)/g,
+                        '$1\n$2'
+                    );
                 }
-                
+
                 const archiemlLib = options.useNewVersion ? archiemlNew : archieml;
                 return {
                     result: archiemlLib.load(aml),

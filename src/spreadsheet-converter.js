@@ -1,4 +1,4 @@
-import XLSX from 'xlsx';
+import XLSX from '../vendor/xlsx.full.min.js';
 import debug from 'debug';
 
 const log = debug('google-drive-sync:spreadsheet-converter');

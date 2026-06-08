@@ -49,8 +49,13 @@ export default class Syncer {
         return this.client
             .getChanges(this.state.getPageToken(), this.pageSize)
             .then(this.handleChanges)
-            .then(this.fetchSpecialFiles)
-            .then(() => log('fetch completed successfully'))
+            .then((documentsFetched) =>
+                this.fetchSpecialFiles().then(() => documentsFetched)
+            )
+            .then((documentsFetched) => {
+                log('fetch completed successfully');
+                return documentsFetched;
+            })
             .catch((err) => this.events.emit('error', err));
     };
 
@@ -86,7 +91,10 @@ export default class Syncer {
                     lastCheck: moment().format(),
                 })
             )
-            .then((state) => this.events.emit('synced', state.data));
+            .then((state) => {
+                this.events.emit('synced', state.data);
+                return changes.length;
+            });
     };
 
     fetchSpecialFiles = () => {

@@ -11,6 +11,7 @@ import debug from 'debug';
 import moment from 'moment';
 import path from 'path';
 import util from 'util';
+import createFetcherLoop from './fetcher-loop';
 
 const log = debug('google-drive-sync:cli');
 const httpLog = debug('google-drive-sync:http');
@@ -134,14 +135,7 @@ if (argv.interval) {
         throw new Error(`interval is less than 5 seconds`);
     }
 
-    function sync() {
-        syncer
-            .sync()
-            .then(() => setTimeout(sync, interval))
-            .catch(fatalError);
-    }
-
-    sync();
+    createFetcherLoop(syncer, interval, { onError: fatalError })();
 } else {
     syncer.sync().catch(fatalError);
 }
